@@ -1,282 +1,438 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 
-type Violation = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+type Severity = "high" | "medium" | "low";
+type Risk     = "high" | "medium" | "low" | "clean";
+
+interface Violation {
   rule_id: string;
   rule_name: string;
-  severity: "high" | "medium" | "low";
+  severity: Severity;
   triggered_text: string;
   explanation: string;
   fix: string;
-};
+}
 
-type CheckResult = {
+interface CheckResult {
   violations: Violation[];
   passed_rules_count: number;
-  overall_risk: "high" | "medium" | "low" | "clean";
+  overall_risk: Risk;
   summary: string;
+}
+
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const SEV_MAP: Record<Severity, { bg: string; border: string; badge: string; dot: string; label: string; shadow: string }> = {
+  high:   { bg: "bg-rose-50",   border: "border-rose-200",   badge: "bg-rose-100 text-rose-700",     dot: "bg-rose-500",   label: "High",   shadow: "hover:shadow-rose-100"   },
+  medium: { bg: "bg-amber-50",  border: "border-amber-200",  badge: "bg-amber-100 text-amber-700",   dot: "bg-amber-400",  label: "Medium", shadow: "hover:shadow-amber-100"  },
+  low:    { bg: "bg-sky-50",    border: "border-sky-200",    badge: "bg-sky-100 text-sky-700",       dot: "bg-sky-400",    label: "Low",    shadow: "hover:shadow-sky-100"    },
 };
 
-const SEV_STYLES = {
-  high:   { bg: "bg-red-50",   border: "border-red-200",   badge: "bg-red-100 text-red-700",     dot: "bg-red-500",   label: "HIGH"   },
-  medium: { bg: "bg-amber-50", border: "border-amber-200", badge: "bg-amber-100 text-amber-700", dot: "bg-amber-500", label: "MEDIUM" },
-  low:    { bg: "bg-blue-50",  border: "border-blue-200",  badge: "bg-blue-100 text-blue-700",   dot: "bg-blue-500",  label: "LOW"    },
+const RISK_MAP: Record<Risk, { bg: string; text: string; border: string; label: string; ring: string }> = {
+  high:   { bg: "bg-rose-50",    text: "text-rose-800",    border: "border-rose-200",    label: "Needs attention",  ring: "border-rose-400"    },
+  medium: { bg: "bg-amber-50",   text: "text-amber-800",   border: "border-amber-200",   label: "Some concerns",    ring: "border-amber-400"   },
+  low:    { bg: "bg-sky-50",     text: "text-sky-800",     border: "border-sky-200",     label: "Minor issues",     ring: "border-sky-400"     },
+  clean:  { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200", label: "Looking good",     ring: "border-emerald-400" },
 };
 
-const RISK_STYLES = {
-  high:   { bg: "bg-red-50",   text: "text-red-700",   border: "border-red-200",   label: "High risk",   ring: "border-red-400"   },
-  medium: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", label: "Medium risk", ring: "border-amber-400" },
-  low:    { bg: "bg-blue-50",  text: "text-blue-700",  border: "border-blue-200",  label: "Low risk",    ring: "border-blue-400"  },
-  clean:  { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", label: "Clean",       ring: "border-green-400" },
-};
+function scoreStyle(s: number) {
+  if (s >= 80) return { color: "text-emerald-700", trackColor: "#10B981", label: "Looking good",       ring: "border-emerald-300" };
+  if (s >= 60) return { color: "text-sky-700",     trackColor: "#38BDF8", label: "Minor issues",       ring: "border-sky-300"     };
+  if (s >= 40) return { color: "text-amber-700",   trackColor: "#F59E0B", label: "Needs work",         ring: "border-amber-300"   };
+  if (s >= 20) return { color: "text-orange-700",  trackColor: "#F97316", label: "Significant issues", ring: "border-orange-300"  };
+  return             { color: "text-rose-700",    trackColor: "#F43F5E", label: "High concern",       ring: "border-rose-300"    };
+}
 
-const SCORE_STYLE = (score: number) => {
-  if (score >= 80) return { color: "text-green-700", ring: "border-green-400", bg: "bg-green-50",  label: "Safe to send" };
-  if (score >= 50) return { color: "text-amber-700", ring: "border-amber-400", bg: "bg-amber-50",  label: "Needs work" };
-  return               { color: "text-red-700",   ring: "border-red-400",   bg: "bg-red-50",    label: "Do not send" };
-};
-
-const LOADING_MESSAGES = [
-  "Checking against LinkedIn TOS...",
-  "Scanning for CAN-SPAM violations...",
-  "Reviewing GDPR Article 6 compliance...",
-  "Analyzing spam trigger patterns...",
-  "Generating fix suggestions...",
-  "Almost done...",
+// ─── Loading messages ─────────────────────────────────────────────────────────
+const LOADING_MSGS = [
+  "Analyzing spam-risk patterns…",
+  "Checking LinkedIn policy heuristics…",
+  "Reviewing CAN-SPAM compliance signals…",
+  "Scanning GDPR Article 6 indicators…",
+  "Evaluating outreach language quality…",
+  "Generating safer recommendations…",
 ];
 
-function wordCount(text: string): number {
-  return text.split(/\s+/).filter(Boolean).length;
+// ─── Placeholder examples ─────────────────────────────────────────────────────
+const PLACEHOLDER = `Paste any LinkedIn message here — cold outreach, connection request, InMail, or follow-up.
+
+Examples you can test:
+• "Hi [First Name], I know you're struggling with your sales numbers…"
+• "LIMITED TIME OFFER — click here to book a call TODAY!"
+• "I send this to everyone who might benefit from our solution…"
+
+Or paste your own message to check it for compliance patterns.`;
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function wordCount(t: string) { return t.split(/\s+/).filter(Boolean).length; }
+
+function calcScore(violations: Violation[]) {
+  const h = violations.filter(v => v.severity === "high").length;
+  const m = violations.filter(v => v.severity === "medium").length;
+  const l = violations.filter(v => v.severity === "low").length;
+  return Math.max(0, 100 - h * 15 - m * 7 - l * 3);
 }
 
-function calcScore(violations: Violation[]): number {
-  const high   = violations.filter(v => v.severity === "high").length;
-  const medium = violations.filter(v => v.severity === "medium").length;
-  const low    = violations.filter(v => v.severity === "low").length;
-  return Math.max(0, 100 - (high * 15) - (medium * 7) - (low * 3));
+// ─── Sub-components ───────────────────────────────────────────────────────────
+function ShieldLogo({ size = 18, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" />
+      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
 }
 
-export default function Home() {
-  const [message, setMessage]           = useState("");
-  const [euRecipient, setEuRecipient]   = useState("unknown");
-  const [automationTool, setAutomation] = useState("no");
-  const [outreachType, setOutreachType] = useState("cold");
-  const [result, setResult]             = useState<CheckResult | null>(null);
-  const [loading, setLoading]           = useState(false);
-  const [loadingMsg, setLoadingMsg]     = useState(LOADING_MESSAGES[0]);
-  const [error, setError]               = useState("");
+function CheckMark() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-shrink-0 mt-px">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
 
-  const words   = wordCount(message);
-  const tooLong = words > 300;
+// Animated SVG score ring
+function ScoreRing({ score, style }: { score: number; style: ReturnType<typeof scoreStyle> }) {
+  const r = 26;
+  const circ = 2 * Math.PI * r;
+  const [animated, setAnimated] = useState(0);
 
   useEffect(() => {
-    if (!loading) return;
-    let i = 0;
-    const interval = setInterval(() => {
-      i = (i + 1) % LOADING_MESSAGES.length;
-      setLoadingMsg(LOADING_MESSAGES[i]);
-    }, 3000);
-    return () => clearInterval(interval);
+    const raf = requestAnimationFrame(() => {
+      setTimeout(() => setAnimated(score), 80);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [score]);
+
+  const offset = circ - (animated / 100) * circ;
+
+  return (
+    <div className="relative w-[68px] h-[68px] flex-shrink-0" role="img" aria-label={`Compliance score: ${score} out of 100`}>
+      <svg width="68" height="68" viewBox="0 0 68 68">
+        <circle cx="34" cy="34" r={r} fill="white" stroke="#E2E8F0" strokeWidth="4" />
+        <circle
+          cx="34" cy="34" r={r}
+          fill="none"
+          stroke={style.trackColor}
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+          transform="rotate(-90 34 34)"
+          style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.34,1.56,0.64,1)" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <span className={`text-[18px] font-semibold leading-none ${style.color}`}>{score}</span>
+        <span className="text-[9px] text-slate-400 mt-0.5 leading-none">/100</span>
+      </div>
+    </div>
+  );
+}
+
+// Shimmer loading skeleton
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse" aria-hidden="true">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-[68px] h-[68px] rounded-full bg-slate-100 flex-shrink-0" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="h-4 bg-slate-100 rounded-md w-32" />
+            <div className="h-3 bg-slate-100 rounded-md w-full" />
+            <div className="h-3 bg-slate-100 rounded-md w-4/5" />
+          </div>
+        </div>
+      </div>
+      {[1, 2, 3].map(i => (
+        <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="h-4 bg-slate-100 rounded-md w-40" />
+            <div className="h-5 bg-slate-100 rounded-full w-14" />
+          </div>
+          <div className="h-9 bg-slate-50 rounded-xl w-full" />
+          <div className="h-3 bg-slate-100 rounded-md w-full" />
+          <div className="h-3 bg-slate-100 rounded-md w-3/4" />
+          <div className="h-10 bg-slate-50 rounded-xl w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+export default function Home() {
+  const [msg,     setMsg]     = useState("");
+  const [eu,      setEu]      = useState("unknown");
+  const [auto,    setAuto]    = useState("no");
+  const [type,    setType]    = useState("cold");
+  const [result,  setResult]  = useState<CheckResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [lIdx,    setLIdx]    = useState(0);
+  const [err,     setErr]     = useState("");
+  const [focused, setFocused] = useState(false);
+
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const words      = wordCount(msg);
+  const tooLong    = words > 300;
+
+  // Rotate loading messages
+  useEffect(() => {
+    if (!loading) { setLIdx(0); return; }
+    const id = setInterval(() => setLIdx(i => (i + 1) % LOADING_MSGS.length), 2600);
+    return () => clearInterval(id);
   }, [loading]);
 
-  async function handleCheck() {
-    if (!message.trim()) { setError("Please paste a message first."); return; }
+  const handleCheck = useCallback(async () => {
+    if (!msg.trim()) { setErr("Please paste a message to analyze."); return; }
     setLoading(true);
-    setLoadingMsg(LOADING_MESSAGES[0]);
-    setError("");
+    setErr("");
     setResult(null);
     try {
-      const res = await fetch("/api/check", {
+      const res  = await fetch("/api/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, euRecipient, automationTool, outreachType }),
+        body: JSON.stringify({ message: msg, euRecipient: eu, automationTool: auto, outreachType: type }),
       });
       const data = await res.json();
-      if (data.error) { setError(data.error); return; }
+      if (data.error) { setErr(data.error); return; }
       setResult(data);
-      setTimeout(() => {
-        document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
     } catch {
-      setError("Something went wrong. Please try again.");
+      setErr("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
+  }, [msg, eu, auto, type]);
 
-  const risk  = result ? RISK_STYLES[result.overall_risk] : null;
+  // Keyboard shortcut: Cmd/Ctrl+Enter to submit
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && msg.trim() && !loading) {
+        handleCheck();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleCheck, msg, loading]);
+
+  const risk  = result ? RISK_MAP[result.overall_risk] : null;
   const score = result ? calcScore(result.violations) : null;
-  const ss    = score !== null ? SCORE_STYLE(score) : null;
+  const ss    = score !== null ? scoreStyle(score) : null;
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#F8FAFC]">
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            <span className="text-base font-semibold text-gray-900">OutreachSafe</span>
-            <span className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-full px-2.5 py-0.5 font-medium">Beta</span>
-          </div>
-          <a href="#pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Pricing</a>
+      {/* ── Navbar ──────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 group outline-none focus-visible:ring-2 focus-visible:ring-violet-400 rounded-lg px-1">
+            <span className="text-violet-600 group-hover:text-violet-700 transition-colors duration-150">
+              <ShieldLogo size={19} />
+            </span>
+            <span className="text-[15px] font-semibold text-slate-900 tracking-tight">OutreachSafe</span>
+            <span className="ml-0.5 text-[11px] bg-violet-50 text-violet-600 border border-violet-200/80 rounded-full px-2.5 py-[3px] font-medium leading-none">Beta</span>
+          </Link>
+          <nav className="flex items-center gap-1">
+            <a href="#pricing" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150 px-3 py-1.5 rounded-lg font-medium">Pricing</a>
+            <Link href="/privacy" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150 px-3 py-1.5 rounded-lg font-medium">Privacy</Link>
+          </nav>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-3xl mx-auto px-6 py-10 text-center">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-3 leading-tight">
-            One message can get your LinkedIn<br className="hidden sm:block" /> account restricted.
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <section className="bg-white border-b border-slate-100">
+        <div className="max-w-3xl mx-auto px-5 py-12 sm:py-16 text-center">
+          <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-[12px] font-medium px-3 py-1.5 rounded-full border border-violet-200/70 mb-5 shadow-sm shadow-violet-100">
+            <ShieldLogo size={12} className="text-violet-500" />
+            LinkedIn guidelines · CAN-SPAM · GDPR Article 6
+          </div>
+          <h1 className="text-[1.9rem] sm:text-[2.5rem] font-semibold text-slate-900 leading-[1.15] tracking-tight mb-4">
+            Know if your LinkedIn message is<br className="hidden sm:block" /> safe to send — before you hit send.
           </h1>
-          <p className="text-base text-gray-500 max-w-xl mx-auto mb-6 leading-relaxed">
-            OutreachSafe checks your outreach against LinkedIn TOS, CAN-SPAM, and GDPR before you send — so you never find out the hard way.
+          <p className="text-[15px] sm:text-base text-slate-500 max-w-[460px] mx-auto mb-7 leading-relaxed">
+            Paste your outreach, get a compliance score, see every flagged pattern, and receive specific improvement suggestions — in under 20 seconds.
           </p>
-          <div className="flex items-center justify-center gap-6 text-xs text-gray-400 flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              No LinkedIn login required
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-              Messages are not stored
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-              Free to start — no account needed
-            </span>
+          <div className="flex items-center justify-center gap-5 sm:gap-7 text-[12px] text-slate-400 flex-wrap">
+            {[
+              ["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", "No LinkedIn login"],
+              ["M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636", "Messages not stored"],
+              ["M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", "Free to start"],
+            ].map(([d, t]) => (
+              <span key={t as string} className="flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d as string}/></svg>
+                {t}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-3xl mx-auto px-5 py-7 space-y-4">
 
-        {/* Input card */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Paste your LinkedIn message
-          </label>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Hi [First Name], I know you're struggling with..."
-            rows={7}
-            className="w-full text-sm text-gray-900 border border-gray-200 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder-gray-400 leading-relaxed"
-          />
-
-          {/* Word counter */}
-          <div className="flex justify-between items-center mt-1 mb-4">
-            <p className="text-xs text-gray-400">
-              Checks against 30+ compliance rules
-            </p>
-            <p className="text-xs">
-              <span className={tooLong ? "text-amber-500 font-medium" : "text-gray-400"}>
-                {words} words
+        {/* ── Checker card ────────────────────────────────────────────── */}
+        <div className={`bg-white rounded-2xl border transition-all duration-200 ${focused ? "border-violet-300 shadow-[0_0_0_4px_rgba(139,92,246,0.08)] shadow-md" : "border-slate-200 shadow-sm hover:border-slate-300"}`}>
+          <div className="p-5 sm:p-6">
+            <div className="flex items-center justify-between mb-2.5">
+              <label htmlFor="msg-input" className="text-[13px] font-semibold text-slate-700">
+                Paste your LinkedIn message
+              </label>
+              <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                ~15 sec · ⌘↵ to run
               </span>
-              {tooLong && <span className="text-amber-500 ml-1">⚠ over 300 words</span>}
+            </div>
+
+            <textarea
+              id="msg-input"
+              value={msg}
+              onChange={e => setMsg(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              placeholder={PLACEHOLDER}
+              rows={8}
+              aria-label="LinkedIn outreach message to analyze"
+              className="w-full text-[13.5px] text-slate-900 border border-slate-200 rounded-xl p-4 resize-none focus:outline-none focus:ring-0 focus:border-violet-300 placeholder-slate-400/70 leading-[1.65] transition-colors bg-slate-50/40 min-h-[180px]"
+            />
+
+            <div className="flex justify-between items-center mt-2 mb-4">
+              <p className="text-[11.5px] text-slate-400 flex items-center gap-1.5">
+                <ShieldLogo size={11} className="text-slate-400" />
+                Checks 30+ LinkedIn, CAN-SPAM &amp; GDPR patterns
+              </p>
+              <div className="flex items-center gap-2.5 text-[11.5px]">
+                {msg.length > 0 && <span className="text-slate-400">{msg.length} chars</span>}
+                <span className={tooLong ? "text-amber-500 font-medium" : "text-slate-400"}>
+                  {words} words{tooLong && " · consider shortening"}
+                </span>
+              </div>
+            </div>
+
+            {/* Context toggles */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              {([
+                { label: "EU recipient?",          state: eu,   setState: setEu,   opts: ["yes","no","unknown"]      },
+                { label: "Automation tool?",        state: auto, setState: setAuto, opts: ["yes","no"]                },
+                { label: "Outreach type",           state: type, setState: setType, opts: ["cold","warm","connection"] },
+              ] as const).map(({ label, state, setState, opts }) => (
+                <div key={label}>
+                  <p className="text-[11.5px] font-medium text-slate-500 mb-1.5">{label}</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {opts.map((o: string) => (
+                      <button
+                        key={o}
+                        type="button"
+                        aria-pressed={state === o}
+                        onClick={() => (setState as (v: string) => void)(o)}
+                        className={`text-[12px] px-3 py-1.5 rounded-lg border font-medium transition-all duration-150 ${
+                          state === o
+                            ? "bg-violet-50 border-violet-300 text-violet-700 shadow-sm"
+                            : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700"
+                        }`}
+                      >
+                        {o.charAt(0).toUpperCase() + o.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Button */}
+            <button
+              type="button"
+              onClick={handleCheck}
+              disabled={loading || !msg.trim()}
+              aria-busy={loading}
+              className="
+                w-full relative font-semibold text-[13.5px] py-3.5 rounded-xl
+                transition-all duration-200
+                bg-gradient-to-b from-violet-500 to-violet-700
+                hover:from-violet-400 hover:to-violet-600
+                active:from-violet-700 active:to-violet-800
+                disabled:from-violet-300 disabled:to-violet-400
+                text-white
+                shadow-[0_2px_8px_rgba(109,40,217,0.30)] hover:shadow-[0_4px_14px_rgba(109,40,217,0.38)]
+                disabled:shadow-none disabled:cursor-not-allowed
+                border border-violet-800/20
+                hover:-translate-y-[1px] active:translate-y-0
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2
+              "
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2.5">
+                  <svg className="animate-spin h-4 w-4 opacity-75" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  <span className="font-medium">{LOADING_MSGS[lIdx]}</span>
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <ShieldLogo size={15} />
+                  Analyze my message
+                </span>
+              )}
+            </button>
+
+            {/* Progress dots during loading */}
+            {loading && (
+              <div className="flex items-center justify-center gap-1.5 mt-3" role="status" aria-live="polite" aria-label={LOADING_MSGS[lIdx]}>
+                {LOADING_MSGS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-full transition-all duration-500 ${i === lIdx ? "w-2 h-2 bg-violet-500" : "w-1.5 h-1.5 bg-slate-300"}`}
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Powered by */}
+            <p className="text-center text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Powered by Claude AI · analysis runs privately
             </p>
+
+            {err && (
+              <p className="mt-3 text-[13px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5" role="alert">
+                {err}
+              </p>
+            )}
           </div>
-
-          {/* Context toggles */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-            <div>
-              <p className="text-xs font-medium text-gray-600 mb-1.5">EU recipient?</p>
-              <div className="flex gap-2">
-                {["yes", "no", "unknown"].map((v) => (
-                  <button key={v} onClick={() => setEuRecipient(v)}
-                    className={`text-xs px-3 py-1.5 rounded-md border font-medium transition-colors ${
-                      euRecipient === v
-                        ? "bg-indigo-50 border-indigo-400 text-indigo-700"
-                        : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    {v.charAt(0).toUpperCase() + v.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-600 mb-1.5">Using automation tool?</p>
-              <div className="flex gap-2">
-                {["yes", "no"].map((v) => (
-                  <button key={v} onClick={() => setAutomation(v)}
-                    className={`text-xs px-3 py-1.5 rounded-md border font-medium transition-colors ${
-                      automationTool === v
-                        ? "bg-indigo-50 border-indigo-400 text-indigo-700"
-                        : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    {v.charAt(0).toUpperCase() + v.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-600 mb-1.5">Outreach type</p>
-              <div className="flex gap-2">
-                {["cold", "warm", "connection"].map((v) => (
-                  <button key={v} onClick={() => setOutreachType(v)}
-                    className={`text-xs px-3 py-1.5 rounded-md border font-medium transition-colors ${
-                      outreachType === v
-                        ? "bg-indigo-50 border-indigo-400 text-indigo-700"
-                        : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-                    {v.charAt(0).toUpperCase() + v.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <button onClick={handleCheck} disabled={loading || message.trim().length === 0}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white font-medium text-sm py-3 rounded-lg transition-colors">
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-                {loadingMsg}
-              </span>
-            ) : "Check my message →"}
-          </button>
-
-          {error && (
-            <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-              {error}
-            </p>
-          )}
         </div>
 
-        {/* Results */}
-        {result && risk && score !== null && ss && (
-          <div id="results" className="space-y-4">
+        {/* ── Loading skeleton ─────────────────────────────────────────── */}
+        {loading && <LoadingSkeleton />}
 
-            {/* Score + risk banner */}
-            <div className={`rounded-xl border ${risk.border} ${risk.bg} p-5`}>
+        {/* ── Results ──────────────────────────────────────────────────── */}
+        {result && risk && score !== null && ss && (
+          <div ref={resultsRef} className="space-y-3">
+
+            {/* Score banner */}
+            <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-5 shadow-sm`}>
               <div className="flex items-start gap-4">
-                {/* Score ring */}
-                <div className={`flex-shrink-0 w-16 h-16 rounded-full border-4 ${ss.ring} flex flex-col items-center justify-center ${ss.bg}`}>
-                  <span className={`text-xl font-semibold leading-none ${ss.color}`}>{score}</span>
-                  <span className={`text-xs ${ss.color} opacity-70`}>/100</span>
-                </div>
+                <ScoreRing score={score} style={ss} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-semibold ${risk.text}`}>{risk.label}</span>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ss.bg} ${ss.color}`}>{ss.label}</span>
+                  <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[13px] font-semibold ${risk.text}`}>{risk.label}</span>
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/70 border ${risk.border} ${risk.text}`}>{ss.label}</span>
                     </div>
-                    <div className="flex gap-3 text-xs text-gray-500">
-                      <span><span className="font-semibold text-gray-800">{result.violations.length}</span> violations</span>
-                      <span><span className="font-semibold text-gray-800">{result.passed_rules_count}</span> passed</span>
+                    <div className="flex gap-3 text-[12px] text-slate-500">
+                      <span><span className="font-semibold text-slate-800">{result.violations.length}</span> flagged</span>
+                      <span><span className="font-semibold text-slate-800">{result.passed_rules_count}</span> passed</span>
                     </div>
                   </div>
-                  <p className={`text-sm ${risk.text} leading-relaxed`}>{result.summary}</p>
+                  <p className={`text-[13px] ${risk.text} leading-relaxed`}>{result.summary}</p>
                   {result.violations.length > 0 && (
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {(["high","medium","low"] as const).map((s) => {
-                        const count = result.violations.filter(v => v.severity === s).length;
-                        if (!count) return null;
-                        const st = SEV_STYLES[s];
-                        return <span key={s} className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.badge}`}>{count} {s}</span>;
+                    <div className="flex gap-1.5 mt-2 flex-wrap">
+                      {(["high","medium","low"] as const).map(s => {
+                        const c = result.violations.filter(v => v.severity === s).length;
+                        if (!c) return null;
+                        return <span key={s} className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${SEV_MAP[s].badge}`}>{c} {s}</span>;
                       })}
                     </div>
                   )}
@@ -284,41 +440,49 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Disclaimer */}
+            <p className="text-[11px] text-slate-400 text-center px-2 leading-relaxed">
+              Analysis is informational only — not legal advice. Not affiliated with LinkedIn, Meta, or any platform referenced.
+            </p>
+
             {/* Clean state */}
             {result.violations.length === 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                <p className="text-green-700 font-semibold">No violations found — this message looks clean.</p>
-                <p className="text-green-600 text-sm mt-1">Safe to send. Score: {score}/100.</p>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto mb-3">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <p className="text-emerald-800 font-semibold text-[14px] mb-1">No patterns flagged</p>
+                <p className="text-emerald-700 text-[13px]">This message looks clean across all 30+ checks. Compliance score: {score}/100.</p>
               </div>
             )}
 
             {/* Violation cards */}
             {result.violations.map((v, i) => {
-              const s = SEV_STYLES[v.severity];
+              const s = SEV_MAP[v.severity];
               return (
-                <div key={i} className={`rounded-xl border ${s.border} ${s.bg} p-5`}>
+                <div key={i} className={`rounded-2xl border ${s.border} ${s.bg} p-5 shadow-sm hover:shadow-md ${s.shadow} transition-shadow duration-200`}>
                   <div className="flex items-start justify-between mb-3 gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-0.5 ${s.dot}`} aria-hidden="true"/>
-                      <span className="text-sm font-semibold text-gray-900">{v.rule_name}</span>
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-[3px] ${s.dot}`} aria-hidden="true" />
+                      <span className="text-[13px] font-semibold text-slate-900 leading-snug">{v.rule_name}</span>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.badge}`}>{s.label}</span>
-                      <span className="text-xs text-gray-400 font-mono">{v.rule_id}</span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${s.badge}`}>{s.label}</span>
+                      <span className="text-[10px] text-slate-400 font-mono bg-white/70 px-1.5 py-0.5 rounded-md border border-white">{v.rule_id}</span>
                     </div>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="bg-white bg-opacity-70 rounded-lg px-3 py-2">
-                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Triggered by </span>
-                      <span className="text-gray-800 italic">&quot;{v.triggered_text}&quot;</span>
+                  <div className="space-y-2 text-[13px]">
+                    <div className="bg-white/60 rounded-xl px-3.5 py-2.5 border border-white/80">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] mr-1.5">Pattern</span>
+                      <span className="text-slate-700 italic">&ldquo;{v.triggered_text}&rdquo;</span>
                     </div>
-                    <div className="px-1">
-                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Why </span>
-                      <span className="text-gray-700">{v.explanation}</span>
+                    <div className="px-0.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] mr-1.5">Why it matters</span>
+                      <span className="text-slate-600 leading-relaxed">{v.explanation}</span>
                     </div>
-                    <div className="bg-white bg-opacity-90 rounded-lg px-3 py-2">
-                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Fix </span>
-                      <span className="text-gray-900">{v.fix}</span>
+                    <div className="bg-white/80 rounded-xl px-3.5 py-2.5 border border-white shadow-sm">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] mr-1.5">Suggestion</span>
+                      <span className="text-slate-900 leading-relaxed">{v.fix}</span>
                     </div>
                   </div>
                 </div>
@@ -326,82 +490,121 @@ export default function Home() {
             })}
 
             {result.violations.length > 0 && (
-              <div className="text-center pt-2">
-                <button onClick={() => { setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
-                  ← Edit message and re-check
+              <div className="text-center py-2">
+                <button
+                  type="button"
+                  onClick={() => { setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="text-[13px] text-violet-600 hover:text-violet-800 font-medium transition-colors inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-violet-50"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                  Edit and re-analyze
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* How it works */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">How it works</h2>
+        {/* ── How it works ─────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+          <h2 className="text-[13px] font-semibold text-slate-900 mb-5">How it works</h2>
           <div className="grid grid-cols-3 gap-4 text-center">
             {[
-              { step: "1", title: "Paste your message", desc: "Drop in your LinkedIn outreach text" },
-              { step: "2", title: "Run the check", desc: "AI scans against 30+ compliance rules" },
-              { step: "3", title: "Fix and send", desc: "Apply specific fixes, then send with confidence" },
-            ].map(({ step, title, desc }) => (
-              <div key={step}>
-                <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-semibold flex items-center justify-center mx-auto mb-2">{step}</div>
-                <p className="text-xs font-medium text-gray-900 mb-1">{title}</p>
-                <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+              { n: "1", t: "Paste your message",  d: "Drop in any LinkedIn outreach — InMail, DM, or connection request" },
+              { n: "2", t: "Run the analysis",    d: "AI checks 30+ compliance patterns across 4 regulatory frameworks"  },
+              { n: "3", t: "Apply suggestions",   d: "Fix flagged patterns, re-analyze until clean, then send confidently" },
+            ].map(({ n, t, d }) => (
+              <div key={n} className="group">
+                <div className="w-8 h-8 rounded-full bg-violet-50 border border-violet-200 text-violet-600 text-[13px] font-semibold flex items-center justify-center mx-auto mb-2.5 group-hover:bg-violet-100 transition-colors duration-150">
+                  {n}
+                </div>
+                <p className="text-[12px] font-semibold text-slate-800 mb-1 leading-snug">{t}</p>
+                <p className="text-[11.5px] text-slate-500 leading-relaxed">{d}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Pricing */}
-        <div id="pricing" className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-1">Pricing</h2>
-          <p className="text-xs text-gray-500 mb-5">Start free. Upgrade when you need more checks.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* ── Pricing ──────────────────────────────────────────────────── */}
+        <div id="pricing" className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+          <h2 className="text-[13px] font-semibold text-slate-900 mb-0.5">Pricing</h2>
+          <p className="text-[12px] text-slate-400 mb-5">Start free — no credit card, no account required.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             {[
-              { name: "Free", price: "$0", period: "forever", desc: "For occasional checking", features: ["5 checks per day", "All 30+ rules", "Severity scoring", "Fix suggestions"], featured: false },
-              { name: "Starter", price: "$19", period: "/month", desc: "For active SDRs", features: ["200 checks per month", "Chrome extension", "CAN-SPAM + GDPR rules", "Weekly digest email", "Message history"], featured: true },
-              { name: "Pro", price: "$49", period: "/month", desc: "For sales teams", features: ["Unlimited checks", "3 team seats", "API access", "Bulk template scanner", "Priority support"], featured: false },
-            ].map(({ name, price, period, desc, features, featured }) => (
-              <div key={name} className={`rounded-lg p-4 ${featured ? "border-2 border-indigo-500 relative" : "border border-gray-200"}`}>
-                {featured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-medium px-3 py-0.5 rounded-full">Most popular</div>}
-                <div className="font-medium text-sm text-gray-900 mb-0.5">{name}</div>
-                <div className="mb-1">
-                  <span className="text-2xl font-semibold text-gray-900">{price}</span>
-                  <span className="text-xs text-gray-500">{period}</span>
-                </div>
-                <p className="text-xs text-gray-500 mb-3">{desc}</p>
-                {features.map(f => (
-                  <div key={f} className="flex items-center gap-1.5 text-xs text-gray-600 mb-1">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                    {f}
+              {
+                name: "Free",    price: "$0",  period: "forever", cta: "Start free",  featured: false,
+                desc: "For occasional checking",
+                features: ["5 analyses per day", "30+ compliance patterns", "Compliance score 0–100", "Improvement suggestions"],
+              },
+              {
+                name: "Starter", price: "$19", period: "/month",  cta: "Get Starter", featured: true,
+                desc: "For active SDRs and founders",
+                features: ["200 analyses per month", "Chrome extension (in-context)", "CAN-SPAM + GDPR deep scan", "Weekly digest email", "Message history"],
+              },
+              {
+                name: "Pro",     price: "$49", period: "/month",  cta: "Get Pro",     featured: false,
+                desc: "For sales teams and agencies",
+                features: ["Unlimited analyses", "3 team seats (+$12/extra)", "API access", "Bulk template scanner", "Priority support"],
+              },
+            ].map(({ name, price, period, cta, featured, desc, features }) => (
+              <div
+                key={name}
+                className={`relative rounded-xl p-4 transition-all duration-200 ${
+                  featured
+                    ? "border-2 border-violet-500 shadow-md shadow-violet-100 hover:shadow-lg hover:shadow-violet-100 hover:-translate-y-[1px]"
+                    : "border border-slate-200 hover:border-slate-300 hover:shadow-md hover:-translate-y-[1px]"
+                }`}
+              >
+                {featured && (
+                  <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 bg-gradient-to-b from-violet-500 to-violet-700 text-white text-[11px] font-semibold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm shadow-violet-300">
+                    Most popular
                   </div>
-                ))}
-                <button className={`mt-4 w-full text-xs font-medium py-2 rounded-md transition-colors ${featured ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200"}`}>
-                  {name === "Free" ? "Start free" : `Get ${name}`}
+                )}
+                <p className="font-semibold text-[13px] text-slate-900 mb-0.5">{name}</p>
+                <div className="flex items-baseline gap-1 mb-0.5">
+                  <span className="text-[22px] font-semibold text-slate-900 leading-none">{price}</span>
+                  <span className="text-[11px] text-slate-400">{period}</span>
+                </div>
+                <p className="text-[11.5px] text-slate-500 mb-3.5">{desc}</p>
+                <div className="space-y-1.5 mb-4">
+                  {features.map(f => (
+                    <div key={f} className="flex items-start gap-1.5 text-[12px] text-slate-600">
+                      <CheckMark />
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className={`w-full text-[12px] font-semibold py-2 rounded-lg transition-all duration-150 ${
+                    featured
+                      ? "bg-gradient-to-b from-violet-500 to-violet-700 hover:from-violet-400 hover:to-violet-600 text-white shadow-sm shadow-violet-200 border border-violet-800/20"
+                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  {cta}
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Footer */}
-        <footer className="border-t border-gray-200 pt-6 pb-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
+        {/* ── Footer ───────────────────────────────────────────────────── */}
+        <footer className="border-t border-slate-200 pt-5 pb-6" role="contentinfo">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-slate-400">
             <div className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
+              <ShieldLogo size={11} className="text-slate-400" />
               <span>© 2026 Cyber Global Technologies LLC</span>
             </div>
             <div className="flex items-center gap-4">
-              <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy</a>
-              <a href="/terms" className="hover:text-gray-600 transition-colors">Terms of Service</a>
+              <Link href="/privacy" className="hover:text-slate-700 transition-colors duration-150 underline-offset-2 hover:underline">Privacy Policy</Link>
+              <Link href="/terms"   className="hover:text-slate-700 transition-colors duration-150 underline-offset-2 hover:underline">Terms of Service</Link>
             </div>
-            <span>Not legal advice</span>
+            <span className="text-center text-[11px] leading-relaxed text-slate-400/80">
+              Informational only · Not legal advice · Not affiliated with LinkedIn
+            </span>
           </div>
         </footer>
+
       </div>
     </main>
   );

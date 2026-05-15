@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F8FAFC;
+}
+
+/* ── Prevent iOS textarea zoom ────────────────────────────────────────────── */
+textarea, input, select {
+  font-size: max(16px, 1em);
+}
+
+/* ── Focus ring — global accessible outline ───────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #8B5CF6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Subtle scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ── Score ring animation — no global transition interference ─────────────── */
+.animate-spin { transition: none !important; }
+svg circle[style*="stroke-dashoffset"] { transition: none; }
+
+/* ── Shimmer keyframe for loading skeleton ────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Smooth color/shadow transitions on interactive elements only ──────────── */
+button, a, input, textarea, [role="button"] {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform, outline-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
