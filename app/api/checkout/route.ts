@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-04-22.dahlia",
-});
+// ── DO NOT initialize Stripe at module level ──────────────────────────────────
+// Render reads env vars at runtime, not build time.
+// Initializing here causes "Neither apiKey provided" during build.
 
-const VALID_PRICES = new Set([
+const VALID_PRICES = () => new Set([
   process.env.STRIPE_STARTER_PRICE_ID,
   process.env.STRIPE_PRO_PRICE_ID,
 ]);
 
 export async function POST(req: NextRequest) {
+  // Initialize Stripe inside the handler — reads env at runtime, not build time
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2026-04-22.dahlia",
+  });
+
   try {
     const { priceId } = await req.json();
 
-    // Validate priceId — never trust client input
-    if (!priceId || !VALID_PRICES.has(priceId)) {
+    if (!priceId || !VALID_PRICES().has(priceId)) {
       return NextResponse.json({ error: "Invalid plan selected." }, { status: 400 });
     }
 
