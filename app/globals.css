@@ -4,30 +4,29 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 body {
-  background-color: #F0EFFE;
+  background-color: #F0F0F5;
 }
 textarea, input, select {
   font-size: max(16px, 1em);
 }
 :focus-visible {
-  outline: 2px solid #8B5CF6;
+  outline: 2px solid #7C3AED;
   outline-offset: 2px;
   border-radius: 6px;
 }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+::-webkit-scrollbar-thumb { background: #C4C4CF; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #9999AA; }
 .animate-spin { transition: none !important; }
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
   100% { background-position:  600px 0; }
 }
 .shimmer {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background: linear-gradient(90deg, #EBEBF0 25%, #E0E0E8 50%, #EBEBF0 75%);
   background-size: 600px 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
