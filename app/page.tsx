@@ -203,8 +203,8 @@ export default function Home() {
     setCheckoutErr("");
     try {
       const priceId = priceEnvKey === "starter"
-        ? process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID
-        : process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
+        ? "price_1TXWvuFnIuEgeFxO6nVnXJoB"
+        : "price_1TXWuPFnIuEgeFxOesJVBAgJ";
 
       const res  = await fetch("/api/checkout", {
         method: "POST",
