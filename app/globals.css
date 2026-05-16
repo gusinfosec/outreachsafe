@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 html {
@@ -46,7 +48,7 @@ svg circle[style*="stroke-dashoffset"] { transition: none; }
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-/* ── Smooth color/shadow transitions on interactive elements only ──────────── */
+/* ── Smooth transitions on interactive elements only ──────────────────────── */
 button, a, input, textarea, [role="button"] {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform, outline-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
