@@ -235,7 +235,7 @@ export default function Home() {
 
   return (
     // Subtle lavender-tinted page background
-    <main className="min-h-screen" style={{ background: "linear-gradient(180deg, #F5F3FF 0%, #F8FAFC 120px, #F8FAFC 100%)" }}>
+    <main className="min-h-screen" style={{ background: "linear-gradient(180deg, #EDE9FE 0%, #F0EFFE 120px, #F5F4FF 100%)" }}>
 
       {/* ── Navbar ──────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-violet-100/80"
