@@ -7,7 +7,7 @@ html {
   text-rendering: optimizeLegibility;
 }
 body {
-  background-color: #F8FAFC;
+  background-color: #F0EFFE;
 }
 textarea, input, select {
   font-size: max(16px, 1em);
