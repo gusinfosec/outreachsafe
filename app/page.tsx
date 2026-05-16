@@ -30,11 +30,11 @@ const SEV_MAP: Record<Severity, { bg: string; border: string; badge: string; dot
   low:    { bg: "bg-sky-50",    border: "border-sky-200",    badge: "bg-sky-100 text-sky-700",       dot: "bg-sky-400",    label: "Low",    shadow: "hover:shadow-sky-100"    },
 };
 
-const RISK_MAP: Record<Risk, { bg: string; text: string; border: string; label: string; ring: string }> = {
-  high:   { bg: "bg-rose-50",    text: "text-rose-800",    border: "border-rose-200",    label: "Needs attention",  ring: "border-rose-400"    },
-  medium: { bg: "bg-amber-50",   text: "text-amber-800",   border: "border-amber-200",   label: "Some concerns",    ring: "border-amber-400"   },
-  low:    { bg: "bg-sky-50",     text: "text-sky-800",     border: "border-sky-200",     label: "Minor issues",     ring: "border-sky-400"     },
-  clean:  { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200", label: "Looking good",     ring: "border-emerald-400" },
+const RISK_MAP: Record<Risk, { bg: string; text: string; border: string; label: string }> = {
+  high:   { bg: "bg-rose-50",    text: "text-rose-800",    border: "border-rose-200",    label: "Needs attention"  },
+  medium: { bg: "bg-amber-50",   text: "text-amber-800",   border: "border-amber-200",   label: "Some concerns"    },
+  low:    { bg: "bg-sky-50",     text: "text-sky-800",     border: "border-sky-200",     label: "Minor issues"     },
+  clean:  { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200", label: "Looking good"     },
 };
 
 function scoreStyle(s: number) {
@@ -45,7 +45,6 @@ function scoreStyle(s: number) {
   return             { color: "text-rose-700",    trackColor: "#F43F5E", label: "High concern",       ring: "border-rose-300"    };
 }
 
-// ─── Loading messages ─────────────────────────────────────────────────────────
 const LOADING_MSGS = [
   "Analyzing spam-risk patterns…",
   "Checking LinkedIn policy heuristics…",
@@ -55,7 +54,6 @@ const LOADING_MSGS = [
   "Generating safer recommendations…",
 ];
 
-// ─── Placeholder examples ─────────────────────────────────────────────────────
 const PLACEHOLDER = `Paste any LinkedIn message here — cold outreach, connection request, InMail, or follow-up.
 
 Examples you can test:
@@ -65,7 +63,6 @@ Examples you can test:
 
 Or paste your own message to check it for compliance patterns.`;
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
 function wordCount(t: string) { return t.split(/\s+/).filter(Boolean).length; }
 
 function calcScore(violations: Violation[]) {
@@ -78,7 +75,8 @@ function calcScore(violations: Violation[]) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function ShieldLogo({ size = 18, className = "" }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" strokeWidth="1.75"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" />
       <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" />
     </svg>
@@ -87,42 +85,36 @@ function ShieldLogo({ size = 18, className = "" }: { size?: number; className?: 
 
 function CheckMark() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-shrink-0 mt-px">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10B981"
+      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true" className="flex-shrink-0 mt-px">
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
 
-// Animated SVG score ring
 function ScoreRing({ score, style }: { score: number; style: ReturnType<typeof scoreStyle> }) {
-  const r = 26;
+  const r    = 26;
   const circ = 2 * Math.PI * r;
   const [animated, setAnimated] = useState(0);
 
   useEffect(() => {
-    const raf = requestAnimationFrame(() => {
-      setTimeout(() => setAnimated(score), 80);
-    });
+    const raf = requestAnimationFrame(() => setTimeout(() => setAnimated(score), 80));
     return () => cancelAnimationFrame(raf);
   }, [score]);
 
   const offset = circ - (animated / 100) * circ;
 
   return (
-    <div className="relative w-[68px] h-[68px] flex-shrink-0" role="img" aria-label={`Compliance score: ${score} out of 100`}>
+    <div className="relative w-[68px] h-[68px] flex-shrink-0"
+      role="img" aria-label={`Compliance score: ${score} out of 100`}>
       <svg width="68" height="68" viewBox="0 0 68 68">
         <circle cx="34" cy="34" r={r} fill="white" stroke="#E2E8F0" strokeWidth="4" />
-        <circle
-          cx="34" cy="34" r={r}
-          fill="none"
-          stroke={style.trackColor}
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
+        <circle cx="34" cy="34" r={r} fill="none" stroke={style.trackColor}
+          strokeWidth="4" strokeLinecap="round"
+          strokeDasharray={circ} strokeDashoffset={offset}
           transform="rotate(-90 34 34)"
-          style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.34,1.56,0.64,1)" }}
-        />
+          style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.34,1.56,0.64,1)" }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className={`text-[18px] font-semibold leading-none ${style.color}`}>{score}</span>
@@ -132,7 +124,6 @@ function ScoreRing({ score, style }: { score: number; style: ReturnType<typeof s
   );
 }
 
-// Shimmer loading skeleton
 function LoadingSkeleton() {
   return (
     <div className="space-y-3 animate-pulse" aria-hidden="true">
@@ -164,21 +155,22 @@ function LoadingSkeleton() {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [msg,     setMsg]     = useState("");
-  const [eu,      setEu]      = useState("unknown");
-  const [auto,    setAuto]    = useState("no");
-  const [type,    setType]    = useState("cold");
-  const [result,  setResult]  = useState<CheckResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [lIdx,    setLIdx]    = useState(0);
-  const [err,     setErr]     = useState("");
-  const [focused, setFocused] = useState(false);
+  const [msg,           setMsg]           = useState("");
+  const [eu,            setEu]            = useState("unknown");
+  const [auto,          setAuto]          = useState("no");
+  const [type,          setType]          = useState("cold");
+  const [result,        setResult]        = useState<CheckResult | null>(null);
+  const [loading,       setLoading]       = useState(false);
+  const [lIdx,          setLIdx]          = useState(0);
+  const [err,           setErr]           = useState("");
+  const [focused,       setFocused]       = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [checkoutErr,   setCheckoutErr]   = useState("");
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const words      = wordCount(msg);
   const tooLong    = words > 300;
 
-  // Rotate loading messages
   useEffect(() => {
     if (!loading) { setLIdx(0); return; }
     const id = setInterval(() => setLIdx(i => (i + 1) % LOADING_MSGS.length), 2600);
@@ -187,9 +179,7 @@ export default function Home() {
 
   const handleCheck = useCallback(async () => {
     if (!msg.trim()) { setErr("Please paste a message to analyze."); return; }
-    setLoading(true);
-    setErr("");
-    setResult(null);
+    setLoading(true); setErr(""); setResult(null);
     try {
       const res  = await fetch("/api/check", {
         method: "POST",
@@ -207,12 +197,33 @@ export default function Home() {
     }
   }, [msg, eu, auto, type]);
 
-  // Keyboard shortcut: Cmd/Ctrl+Enter to submit
+  // ── Stripe checkout handler ───────────────────────────────────────────────
+  const handleSubscribe = useCallback(async (planName: string, priceEnvKey: string) => {
+    setCheckoutLoading(planName);
+    setCheckoutErr("");
+    try {
+      const priceId = priceEnvKey === "starter"
+        ? process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID
+        : process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
+
+      const res  = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
+      });
+      const data = await res.json();
+      if (data.error) { setCheckoutErr(data.error); return; }
+      if (data.url)   { window.location.href = data.url; }
+    } catch {
+      setCheckoutErr("Could not start checkout. Please try again.");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  }, []);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && msg.trim() && !loading) {
-        handleCheck();
-      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && msg.trim() && !loading) handleCheck();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -223,10 +234,12 @@ export default function Home() {
   const ss    = score !== null ? scoreStyle(score) : null;
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
+    // Subtle lavender-tinted page background
+    <main className="min-h-screen" style={{ background: "linear-gradient(180deg, #F5F3FF 0%, #F8FAFC 120px, #F8FAFC 100%)" }}>
 
       {/* ── Navbar ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/70 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <header className="sticky top-0 z-30 border-b border-violet-100/80"
+        style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", boxShadow: "0 1px 3px rgba(109,40,217,0.06)" }}>
         <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group outline-none focus-visible:ring-2 focus-visible:ring-violet-400 rounded-lg px-1">
             <span className="text-violet-600 group-hover:text-violet-700 transition-colors duration-150">
@@ -236,16 +249,18 @@ export default function Home() {
             <span className="ml-0.5 text-[11px] bg-violet-50 text-violet-600 border border-violet-200/80 rounded-full px-2.5 py-[3px] font-medium leading-none">Beta</span>
           </Link>
           <nav className="flex items-center gap-1">
-            <a href="#pricing" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150 px-3 py-1.5 rounded-lg font-medium">Pricing</a>
-            <Link href="/privacy" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150 px-3 py-1.5 rounded-lg font-medium">Privacy</Link>
+            <a href="#pricing" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-violet-50 transition-all duration-150 px-3 py-1.5 rounded-lg font-medium">Pricing</a>
+            <Link href="/privacy" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-violet-50 transition-all duration-150 px-3 py-1.5 rounded-lg font-medium">Privacy</Link>
           </nav>
         </div>
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
-      <section className="bg-white border-b border-slate-100">
+      <section style={{ background: "linear-gradient(180deg, rgba(237,233,254,0.5) 0%, rgba(255,255,255,0.0) 100%)" }}
+        className="border-b border-violet-100/60">
         <div className="max-w-3xl mx-auto px-5 py-12 sm:py-16 text-center">
-          <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-[12px] font-medium px-3 py-1.5 rounded-full border border-violet-200/70 mb-5 shadow-sm shadow-violet-100">
+          <div className="inline-flex items-center gap-1.5 bg-white/80 text-violet-700 text-[12px] font-medium px-3 py-1.5 rounded-full border border-violet-200/70 mb-5"
+            style={{ boxShadow: "0 1px 6px rgba(109,40,217,0.10)" }}>
             <ShieldLogo size={12} className="text-violet-500" />
             LinkedIn guidelines · CAN-SPAM · GDPR Article 6
           </div>
@@ -272,8 +287,10 @@ export default function Home() {
 
       <div className="max-w-3xl mx-auto px-5 py-7 space-y-4">
 
-        {/* ── Checker card ────────────────────────────────────────────── */}
-        <div className={`bg-white rounded-2xl border transition-all duration-200 ${focused ? "border-violet-300 shadow-[0_0_0_4px_rgba(139,92,246,0.08)] shadow-md" : "border-slate-200 shadow-sm hover:border-slate-300"}`}>
+        {/* ── Checker card ─────────────────────────────────────────────── */}
+        <div className={`bg-white rounded-2xl border transition-all duration-200 ${focused
+          ? "border-violet-300 shadow-[0_0_0_4px_rgba(139,92,246,0.08),0_4px_16px_rgba(109,40,217,0.10)]"
+          : "border-slate-200/80 shadow-[0_2px_8px_rgba(109,40,217,0.06)]"} hover:border-violet-200`}>
           <div className="p-5 sm:p-6">
             <div className="flex items-center justify-between mb-2.5">
               <label htmlFor="msg-input" className="text-[13px] font-semibold text-slate-700">
@@ -285,16 +302,14 @@ export default function Home() {
               </span>
             </div>
 
-            <textarea
-              id="msg-input"
-              value={msg}
+            <textarea id="msg-input" value={msg}
               onChange={e => setMsg(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              placeholder={PLACEHOLDER}
-              rows={8}
+              placeholder={PLACEHOLDER} rows={8}
               aria-label="LinkedIn outreach message to analyze"
-              className="w-full text-[13.5px] text-slate-900 border border-slate-200 rounded-xl p-4 resize-none focus:outline-none focus:ring-0 focus:border-violet-300 placeholder-slate-400/70 leading-[1.65] transition-colors bg-slate-50/40 min-h-[180px]"
+              className="w-full text-[13.5px] text-slate-900 border border-slate-200 rounded-xl p-4 resize-none focus:outline-none focus:ring-0 focus:border-violet-300 placeholder-slate-400/70 leading-[1.65] transition-colors min-h-[180px]"
+              style={{ background: "linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%)" }}
             />
 
             <div className="flex justify-between items-center mt-2 mb-4">
@@ -313,25 +328,21 @@ export default function Home() {
             {/* Context toggles */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
               {([
-                { label: "EU recipient?",          state: eu,   setState: setEu,   opts: ["yes","no","unknown"]      },
-                { label: "Automation tool?",        state: auto, setState: setAuto, opts: ["yes","no"]                },
+                { label: "EU recipient?",          state: eu,   setState: setEu,   opts: ["yes","no","unknown"]       },
+                { label: "Automation tool?",        state: auto, setState: setAuto, opts: ["yes","no"]                 },
                 { label: "Outreach type",           state: type, setState: setType, opts: ["cold","warm","connection"] },
               ] as const).map(({ label, state, setState, opts }) => (
                 <div key={label}>
                   <p className="text-[11.5px] font-medium text-slate-500 mb-1.5">{label}</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {opts.map((o: string) => (
-                      <button
-                        key={o}
-                        type="button"
-                        aria-pressed={state === o}
+                      <button key={o} type="button" aria-pressed={state === o}
                         onClick={() => (setState as (v: string) => void)(o)}
                         className={`text-[12px] px-3 py-1.5 rounded-lg border font-medium transition-all duration-150 ${
                           state === o
-                            ? "bg-violet-50 border-violet-300 text-violet-700 shadow-sm"
-                            : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700"
-                        }`}
-                      >
+                            ? "bg-violet-50 border-violet-300 text-violet-700 shadow-sm shadow-violet-100"
+                            : "bg-white border-slate-200 text-slate-500 hover:bg-violet-50/40 hover:border-violet-200 hover:text-slate-700"
+                        }`}>
                         {o.charAt(0).toUpperCase() + o.slice(1)}
                       </button>
                     ))}
@@ -341,25 +352,17 @@ export default function Home() {
             </div>
 
             {/* CTA Button */}
-            <button
-              type="button"
-              onClick={handleCheck}
-              disabled={loading || !msg.trim()}
-              aria-busy={loading}
-              className="
-                w-full relative font-semibold text-[13.5px] py-3.5 rounded-xl
-                transition-all duration-200
-                bg-gradient-to-b from-violet-500 to-violet-700
-                hover:from-violet-400 hover:to-violet-600
-                active:from-violet-700 active:to-violet-800
-                disabled:from-violet-300 disabled:to-violet-400
-                text-white
-                shadow-[0_2px_8px_rgba(109,40,217,0.30)] hover:shadow-[0_4px_14px_rgba(109,40,217,0.38)]
-                disabled:shadow-none disabled:cursor-not-allowed
-                border border-violet-800/20
-                hover:-translate-y-[1px] active:translate-y-0
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2
-              "
+            <button type="button" onClick={handleCheck}
+              disabled={loading || !msg.trim()} aria-busy={loading}
+              className="w-full relative font-semibold text-[13.5px] py-3.5 rounded-xl transition-all duration-200 disabled:cursor-not-allowed text-white border border-violet-800/20 hover:-translate-y-[1px] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+              style={{
+                background: loading || !msg.trim()
+                  ? "linear-gradient(180deg, #C4B5FD 0%, #A78BFA 100%)"
+                  : "linear-gradient(180deg, #7C3AED 0%, #4F46E5 100%)",
+                boxShadow: loading || !msg.trim()
+                  ? "none"
+                  : "0 2px 10px rgba(109,40,217,0.35), 0 1px 2px rgba(109,40,217,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+              }}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2.5">
@@ -367,7 +370,7 @@ export default function Home() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                   </svg>
-                  <span className="font-medium">{LOADING_MSGS[lIdx]}</span>
+                  <span>{LOADING_MSGS[lIdx]}</span>
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
@@ -377,30 +380,20 @@ export default function Home() {
               )}
             </button>
 
-            {/* Progress dots during loading */}
             {loading && (
               <div className="flex items-center justify-center gap-1.5 mt-3" role="status" aria-live="polite" aria-label={LOADING_MSGS[lIdx]}>
                 {LOADING_MSGS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`rounded-full transition-all duration-500 ${i === lIdx ? "w-2 h-2 bg-violet-500" : "w-1.5 h-1.5 bg-slate-300"}`}
-                    aria-hidden="true"
-                  />
+                  <div key={i} className={`rounded-full transition-all duration-500 ${i === lIdx ? "w-2 h-2 bg-violet-500" : "w-1.5 h-1.5 bg-slate-300"}`} aria-hidden="true" />
                 ))}
               </div>
             )}
 
-            {/* Powered by */}
             <p className="text-center text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               Powered by Claude AI · analysis runs privately
             </p>
 
-            {err && (
-              <p className="mt-3 text-[13px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5" role="alert">
-                {err}
-              </p>
-            )}
+            {err && <p className="mt-3 text-[13px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5" role="alert">{err}</p>}
           </div>
         </div>
 
@@ -410,8 +403,6 @@ export default function Home() {
         {/* ── Results ──────────────────────────────────────────────────── */}
         {result && risk && score !== null && ss && (
           <div ref={resultsRef} className="space-y-3">
-
-            {/* Score banner */}
             <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-5 shadow-sm`}>
               <div className="flex items-start gap-4">
                 <ScoreRing score={score} style={ss} />
@@ -440,12 +431,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Disclaimer */}
             <p className="text-[11px] text-slate-400 text-center px-2 leading-relaxed">
               Analysis is informational only — not legal advice. Not affiliated with LinkedIn, Meta, or any platform referenced.
             </p>
 
-            {/* Clean state */}
             {result.violations.length === 0 && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto mb-3">
@@ -456,7 +445,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Violation cards */}
             {result.violations.map((v, i) => {
               const s = SEV_MAP[v.severity];
               return (
@@ -491,11 +479,9 @@ export default function Home() {
 
             {result.violations.length > 0 && (
               <div className="text-center py-2">
-                <button
-                  type="button"
+                <button type="button"
                   onClick={() => { setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                  className="text-[13px] text-violet-600 hover:text-violet-800 font-medium transition-colors inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-violet-50"
-                >
+                  className="text-[13px] text-violet-600 hover:text-violet-800 font-medium transition-colors inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-violet-50">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                   Edit and re-analyze
                 </button>
@@ -505,7 +491,8 @@ export default function Home() {
         )}
 
         {/* ── How it works ─────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6"
+          style={{ boxShadow: "0 2px 8px rgba(109,40,217,0.05)" }}>
           <h2 className="text-[13px] font-semibold text-slate-900 mb-5">How it works</h2>
           <div className="grid grid-cols-3 gap-4 text-center">
             {[
@@ -525,79 +512,113 @@ export default function Home() {
         </div>
 
         {/* ── Pricing ──────────────────────────────────────────────────── */}
-        <div id="pricing" className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+        <div id="pricing" className="rounded-2xl border border-violet-100 p-5 sm:p-6"
+          style={{ background: "linear-gradient(180deg, #F5F3FF 0%, #FFFFFF 100%)", boxShadow: "0 2px 12px rgba(109,40,217,0.07)" }}>
           <h2 className="text-[13px] font-semibold text-slate-900 mb-0.5">Pricing</h2>
           <p className="text-[12px] text-slate-400 mb-5">Start free — no credit card, no account required.</p>
+
+          {checkoutErr && (
+            <p className="mb-4 text-[12px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5" role="alert">
+              {checkoutErr}
+            </p>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             {[
               {
-                name: "Free",    price: "$0",  period: "forever", cta: "Start free",  featured: false,
+                name: "Free", price: "$0", period: "forever", planKey: "free",
                 desc: "For occasional checking",
-                features: ["5 analyses per day", "30+ compliance patterns", "Compliance score 0–100", "Improvement suggestions"],
+                features: ["5 analyses per day","30+ compliance patterns","Compliance score 0–100","Improvement suggestions"],
+                featured: false, cta: "Start free",
               },
               {
-                name: "Starter", price: "$19", period: "/month",  cta: "Get Starter", featured: true,
+                name: "Starter", price: "$19", period: "/month", planKey: "starter",
                 desc: "For active SDRs and founders",
-                features: ["200 analyses per month", "Chrome extension (in-context)", "CAN-SPAM + GDPR deep scan", "Weekly digest email", "Message history"],
+                features: ["200 analyses per month","Chrome extension (in-context)","CAN-SPAM + GDPR deep scan","Weekly digest email","Message history"],
+                featured: true, cta: "Get Starter",
               },
               {
-                name: "Pro",     price: "$49", period: "/month",  cta: "Get Pro",     featured: false,
+                name: "Pro", price: "$49", period: "/month", planKey: "pro",
                 desc: "For sales teams and agencies",
-                features: ["Unlimited analyses", "3 team seats (+$12/extra)", "API access", "Bulk template scanner", "Priority support"],
+                features: ["Unlimited analyses","3 team seats (+$12/extra)","API access","Bulk template scanner","Priority support"],
+                featured: false, cta: "Get Pro",
               },
-            ].map(({ name, price, period, cta, featured, desc, features }) => (
-              <div
-                key={name}
-                className={`relative rounded-xl p-4 transition-all duration-200 ${
+            ].map(({ name, price, period, planKey, desc, features, featured, cta }) => {
+              const isLoading = checkoutLoading === name;
+              return (
+                <div key={name} className={`relative rounded-xl p-4 transition-all duration-200 ${
                   featured
-                    ? "border-2 border-violet-500 shadow-md shadow-violet-100 hover:shadow-lg hover:shadow-violet-100 hover:-translate-y-[1px]"
-                    : "border border-slate-200 hover:border-slate-300 hover:shadow-md hover:-translate-y-[1px]"
+                    ? "border-2 border-violet-500 hover:-translate-y-[2px]"
+                    : "border border-slate-200 hover:border-violet-200 hover:-translate-y-[1px]"
                 }`}
-              >
-                {featured && (
-                  <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 bg-gradient-to-b from-violet-500 to-violet-700 text-white text-[11px] font-semibold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm shadow-violet-300">
-                    Most popular
-                  </div>
-                )}
-                <p className="font-semibold text-[13px] text-slate-900 mb-0.5">{name}</p>
-                <div className="flex items-baseline gap-1 mb-0.5">
-                  <span className="text-[22px] font-semibold text-slate-900 leading-none">{price}</span>
-                  <span className="text-[11px] text-slate-400">{period}</span>
-                </div>
-                <p className="text-[11.5px] text-slate-500 mb-3.5">{desc}</p>
-                <div className="space-y-1.5 mb-4">
-                  {features.map(f => (
-                    <div key={f} className="flex items-start gap-1.5 text-[12px] text-slate-600">
-                      <CheckMark />
-                      <span>{f}</span>
+                  style={featured
+                    ? { background: "linear-gradient(180deg, #FAFAFF 0%, #FFFFFF 100%)", boxShadow: "0 4px 16px rgba(109,40,217,0.14), 0 1px 4px rgba(109,40,217,0.08)" }
+                    : { background: "#FFFFFF", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }
+                  }>
+                  {featured && (
+                    <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 text-white text-[11px] font-semibold px-3 py-0.5 rounded-full whitespace-nowrap"
+                      style={{ background: "linear-gradient(180deg, #7C3AED 0%, #4F46E5 100%)", boxShadow: "0 2px 6px rgba(109,40,217,0.35)" }}>
+                      Most popular
                     </div>
-                  ))}
+                  )}
+                  <p className="font-semibold text-[13px] text-slate-900 mb-0.5">{name}</p>
+                  <div className="flex items-baseline gap-1 mb-0.5">
+                    <span className="text-[22px] font-semibold text-slate-900 leading-none">{price}</span>
+                    <span className="text-[11px] text-slate-400">{period}</span>
+                  </div>
+                  <p className="text-[11.5px] text-slate-500 mb-3.5">{desc}</p>
+                  <div className="space-y-1.5 mb-4">
+                    {features.map(f => (
+                      <div key={f} className="flex items-start gap-1.5 text-[12px] text-slate-600">
+                        <CheckMark />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isLoading || (planKey !== "free" && checkoutLoading !== null)}
+                    onClick={() => planKey !== "free" && handleSubscribe(name, planKey)}
+                    className={`w-full text-[12px] font-semibold py-2 rounded-lg transition-all duration-150 disabled:cursor-not-allowed ${
+                      featured
+                        ? "text-white border border-violet-800/20"
+                        : planKey === "free"
+                        ? "bg-white hover:bg-violet-50 text-slate-700 border border-slate-200 hover:border-violet-200"
+                        : "bg-white hover:bg-violet-50 text-slate-700 border border-slate-200 hover:border-violet-200"
+                    }`}
+                    style={featured ? {
+                      background: isLoading
+                        ? "linear-gradient(180deg, #C4B5FD 0%, #A78BFA 100%)"
+                        : "linear-gradient(180deg, #7C3AED 0%, #4F46E5 100%)",
+                      boxShadow: isLoading ? "none" : "0 2px 8px rgba(109,40,217,0.30)",
+                    } : undefined}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center gap-1.5">
+                        <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                        Redirecting…
+                      </span>
+                    ) : cta}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className={`w-full text-[12px] font-semibold py-2 rounded-lg transition-all duration-150 ${
-                    featured
-                      ? "bg-gradient-to-b from-violet-500 to-violet-700 hover:from-violet-400 hover:to-violet-600 text-white shadow-sm shadow-violet-200 border border-violet-800/20"
-                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  {cta}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
-        <footer className="border-t border-slate-200 pt-5 pb-6" role="contentinfo">
+        <footer className="border-t border-violet-100 pt-5 pb-6" role="contentinfo">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-slate-400">
             <div className="flex items-center gap-1.5">
               <ShieldLogo size={11} className="text-slate-400" />
               <span>© 2026 Cyber Global Technologies LLC</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/privacy" className="hover:text-slate-700 transition-colors duration-150 underline-offset-2 hover:underline">Privacy Policy</Link>
-              <Link href="/terms"   className="hover:text-slate-700 transition-colors duration-150 underline-offset-2 hover:underline">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-violet-600 transition-colors duration-150">Privacy Policy</Link>
+              <Link href="/terms"   className="hover:text-violet-600 transition-colors duration-150">Terms of Service</Link>
             </div>
             <span className="text-center text-[11px] leading-relaxed text-slate-400/80">
               Informational only · Not legal advice · Not affiliated with LinkedIn
