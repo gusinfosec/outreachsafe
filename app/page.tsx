@@ -227,6 +227,7 @@ export default function Home() {
           </Link>
           <nav className="flex items-center gap-1">
             <a href="#pricing" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all px-3 py-1.5 rounded-lg font-medium">Pricing</a>
+            <Link href="/support" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all px-3 py-1.5 rounded-lg font-medium">Support</Link>
             <Link href="/privacy" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all px-3 py-1.5 rounded-lg font-medium">Privacy</Link>
           </nav>
         </div>
@@ -473,6 +474,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-slate-400">
             <div className="flex items-center gap-1.5"><Shield size={11} cls="text-slate-400"/><span>© 2026 Cyber Global Technologies LLC</span></div>
             <div className="flex items-center gap-4">
+              <Link href="/support" className="hover:text-violet-600 transition-colors">Support</Link>
               <Link href="/privacy" className="hover:text-violet-600 transition-colors">Privacy Policy</Link>
               <Link href="/terms"   className="hover:text-violet-600 transition-colors">Terms of Service</Link>
             </div>
