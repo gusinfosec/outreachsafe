@@ -246,14 +246,14 @@ export default function Home() {
           <p className="text-[15px] sm:text-base text-slate-600 max-w-[460px] mx-auto mb-7 leading-relaxed">
             Paste your outreach, get a compliance score, see every flagged pattern, and receive specific improvement suggestions — in under 20 seconds.
           </p>
-          <div className="flex items-center justify-center gap-5 sm:gap-7 text-[12px] text-slate-500 flex-wrap">
+          <div className="flex items-center justify-center gap-5 sm:gap-7 text-[12px] text-slate-400 flex-wrap">
             {[
               ["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z","No LinkedIn login"],
               ["M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636","Messages not stored"],
               ["M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z","Free to start"],
             ].map(([d,t])=>(
               <span key={t} className="flex items-center gap-1.5">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d}/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6D5FD8" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d}/></svg>
                 {t}
               </span>
             ))}
@@ -471,14 +471,14 @@ export default function Home() {
 
         {/* ── Footer ── */}
         <footer className="border-t border-slate-200 pt-5 pb-6" role="contentinfo">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-slate-500">
             <div className="flex items-center gap-1.5"><Shield size={11} cls="text-slate-400"/><span>© 2026 Cyber Global Technologies LLC</span></div>
             <div className="flex items-center gap-4">
-              <Link href="/support" className="hover:text-violet-600 transition-colors">Support</Link>
-              <Link href="/privacy" className="hover:text-violet-600 transition-colors">Privacy Policy</Link>
-              <Link href="/terms"   className="hover:text-violet-600 transition-colors">Terms of Service</Link>
+              <Link href="/support" className="hover:text-violet-600 hover:underline decoration-violet-300 underline-offset-2 transition-all">Support</Link>
+              <Link href="/privacy" className="hover:text-violet-600 hover:underline decoration-violet-300 underline-offset-2 transition-all">Privacy Policy</Link>
+              <Link href="/terms"   className="hover:text-violet-600 hover:underline decoration-violet-300 underline-offset-2 transition-all">Terms of Service</Link>
             </div>
-            <span className="text-center text-[11px] text-slate-400/80">Informational only · Not legal advice · Not affiliated with LinkedIn</span>
+            <span className="text-center text-[11px] text-slate-400">Informational only · Not legal advice · Not affiliated with LinkedIn</span>
           </div>
         </footer>
       </div>
