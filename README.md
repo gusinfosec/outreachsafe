@@ -67,6 +67,17 @@ Annual billing available — 2 months free.
 
 ---
 
+## 🏢 Part of the CGT Compliance Platform
+
+OutreachSafe is one of three compliance products built by Cyber Global Technologies.
+
+| Product | Layer | What it does |
+|---------|-------|--------------|
+| **OutreachSafe** | Sales | Compliance checker for outreach messages |
+| **MergeMind** | Engineering | Compliance-aware PR analysis |
+| **Compliance AI** | GRC | Enterprise audit and risk platform |
+
+---
 
 ## 🔒 Security & Privacy
 
