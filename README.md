@@ -47,7 +47,7 @@ OutreachSafe checks your LinkedIn messages and email outreach against GDPR, CAN-
 
 ## 💻 Chrome Extension
 
-**[Chrome Web Store — Coming Soon](#)**
+**[Chrome Web Store — Pending Review](#)**
 
 Works directly inside LinkedIn — no copy/paste required.
 
@@ -57,9 +57,9 @@ Works directly inside LinkedIn — no copy/paste required.
 
 | Plan | Price | What's included |
 |---|---|---|
-| Free | $0 | 25 scans/month, basic compliance check |
-| Pro | $19/month | Unlimited scans, full compliance report, history |
-| Team | $49/seat/month | Everything + team dashboard, manager view, bulk scanning |
+| Free | $0 | 5 checks/day, basic compliance check |
+| Starter | $19/month | 200 checks/month, Chrome extension included |
+| Pro | $49/month | Unlimited checks, 3 team seats, API access |
 
 Annual billing available — 2 months free.
 
@@ -67,17 +67,6 @@ Annual billing available — 2 months free.
 
 ---
 
-## 🏢 Part of the CGT Compliance Platform
-
-OutreachSafe is one of three compliance products built by Cyber Global Technologies.
-
-| Product | Layer | What it does |
-|---|---|---|
-| **OutreachSafe** | Sales | Compliance for outreach messages |
-| **MergeMind** | Engineering | Compliance-aware PR analysis |
-| **Compliance AI** | GRC | Enterprise audit and risk platform |
-
----
 
 ## 🔒 Security & Privacy
 
