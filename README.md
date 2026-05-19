@@ -5,7 +5,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/status-live-brightgreen" alt="Status: Live" />
   <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="Version: 1.0.0" />
-  <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="License: MIT" />
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT" />
   <img src="https://img.shields.io/badge/Chrome%20Web%20Store-Available-orange?logo=googlechrome" alt="Chrome Web Store: Available" />
   <img src="https://img.shields.io/badge/built%20for-LinkedIn-0A66C2?logo=linkedin" alt="Built for: LinkedIn" />
 </p>
@@ -99,5 +99,5 @@ OutreachSafe is one of three compliance products built by Cyber Global Technolog
 
 <p align="center">
   © 2026 Cyber Global Technologies LLC. All rights reserved.<br/>
-  Released under the <a href="LICENSE">MIT License</a>.
+  Released under the <a href="./LICENSE">MIT License</a>.
 </p>
