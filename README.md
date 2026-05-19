@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="banner.png" alt="OutreachSafe — LinkedIn outreach compliance checker" width="100%" />
+  <img src="./public/banner.png" alt="OutreachSafe — LinkedIn outreach compliance checker" width="100%" />
 </p>
 
 <p align="center">
