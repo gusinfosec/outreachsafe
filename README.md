@@ -63,7 +63,7 @@ Works directly inside LinkedIn — no copy/paste required.
 
 Annual billing available — 2 months free.
 
-👉 [View full pricing at outreachsafe.com/pricing](https://www.outreachsafe.com/pricing)
+👉 [View full pricing at outreachsafe.com/pricing](https://www.outreachsafe.com/#pricing)
 
 ---
 
@@ -92,9 +92,8 @@ OutreachSafe is one of three compliance products built by Cyber Global Technolog
 ## 🌐 Connect
 
 - **Website:** [outreachsafe.com](https://www.outreachsafe.com)
-- **LinkedIn:** [linkedin.com/company/cyber-global-technologies](#) *(update link)*
 - **Built by:** Fretz Olivares — [Cyber Global Technologies](https://www.cyberglobal.ai)
-- **Enterprise inquiries:** [outreachsafe.com/contact](https://www.outreachsafe.com/contact)
+- **Enterprise inquiries:** [hello@outreachsafe.com](mailto:hello@outreachsafe.com)
 
 ---
 
