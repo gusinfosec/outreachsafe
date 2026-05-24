@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,9 +14,13 @@ export default function PrivacyPage() {
       <nav className="sticky top-0 z-[100] bg-[#0F1221]/90 backdrop-blur-xl border-b border-white/[0.07] py-3.5">
         <div className="max-w-[720px] mx-auto px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#60A5FA] flex items-center justify-center text-white">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-            </div>
+            <Image 
+              src="/icon.png" 
+              alt="OutreachSafe" 
+              width={32} 
+              height={32} 
+              style={{ borderRadius: '8px' }}
+            />
             <span className="text-[16px] font-extrabold text-white tracking-tight">Outreach<span className="text-[#7C3AED]">Safe</span></span>
           </Link>
           <Link href="/" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">← Back to app</Link>

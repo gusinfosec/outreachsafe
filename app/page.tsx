@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 type Severity = "high" | "medium" | "low";
 type Risk     = "high" | "medium" | "low" | "clean";
@@ -197,9 +198,13 @@ export default function Home() {
       <nav className="sticky top-0 z-[100] bg-[#0F1221]/85 backdrop-blur-xl border-b border-white/[0.07] py-3.5">
         <div className="max-w-[960px] mx-auto px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#60A5FA] flex items-center justify-center text-white">
-              <Shield size={16}/>
-            </div>
+            <Image 
+              src="/icon.png" 
+              alt="OutreachSafe" 
+              width={32} 
+              height={32} 
+              style={{ borderRadius: '8px' }}
+            />
             <span className="text-[17px] font-extrabold text-white tracking-tight">Outreach<span className="text-[#7C3AED]">Safe</span></span>
             <span className="bg-[#7C3AED]/15 border border-[#7C3AED]/25 text-[#A78BFA] font-mono text-[10px] px-2 py-0.5 rounded-[3px] ml-1 tracking-wider uppercase">Beta</span>
           </Link>
