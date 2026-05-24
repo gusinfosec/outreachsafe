@@ -23,24 +23,24 @@ interface CheckResult {
 }
 
 const SEV: Record<Severity, { bg: string; border: string; badge: string; dot: string; label: string }> = {
-  high:   { bg: "bg-rose-50",   border: "border-rose-200",   badge: "bg-rose-100 text-rose-700",     dot: "bg-rose-500",   label: "High"   },
-  medium: { bg: "bg-amber-50",  border: "border-amber-200",  badge: "bg-amber-100 text-amber-700",   dot: "bg-amber-400",  label: "Medium" },
-  low:    { bg: "bg-sky-50",    border: "border-sky-200",    badge: "bg-sky-100 text-sky-700",       dot: "bg-sky-400",    label: "Low"    },
+  high:   { bg: "bg-rose-500/10",   border: "border-rose-500/30",   badge: "bg-rose-500/20 text-rose-400",     dot: "bg-rose-500",   label: "High"   },
+  medium: { bg: "bg-amber-500/10",  border: "border-amber-500/30",  badge: "bg-amber-500/20 text-amber-400",   dot: "bg-amber-400",  label: "Medium" },
+  low:    { bg: "bg-blue-500/10",    border: "border-blue-500/30",    badge: "bg-blue-500/20 text-blue-400",       dot: "bg-blue-400",    label: "Low"    },
 };
 
 const RISK: Record<Risk, { bg: string; text: string; border: string; label: string }> = {
-  high:   { bg: "bg-rose-50",    text: "text-rose-800",    border: "border-rose-200",    label: "Needs attention" },
-  medium: { bg: "bg-amber-50",   text: "text-amber-800",   border: "border-amber-200",   label: "Some concerns"   },
-  low:    { bg: "bg-sky-50",     text: "text-sky-800",     border: "border-sky-200",     label: "Minor issues"    },
-  clean:  { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200", label: "Looking good"    },
+  high:   { bg: "bg-rose-500/10",    text: "text-rose-400",    border: "border-rose-500/30",    label: "Needs attention" },
+  medium: { bg: "bg-amber-500/10",   text: "text-amber-400",   border: "border-amber-500/30",   label: "Some concerns"   },
+  low:    { bg: "bg-blue-500/10",     text: "text-blue-400",     border: "border-blue-500/30",     label: "Minor issues"    },
+  clean:  { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/30", label: "Looking good"    },
 };
 
 function scoreStyle(s: number) {
-  if (s >= 80) return { color: "text-emerald-700", trackColor: "#10B981", label: "Looking good",       ring: "border-emerald-300" };
-  if (s >= 60) return { color: "text-sky-700",     trackColor: "#38BDF8", label: "Minor issues",       ring: "border-sky-300"     };
-  if (s >= 40) return { color: "text-amber-700",   trackColor: "#F59E0B", label: "Needs work",         ring: "border-amber-300"   };
-  if (s >= 20) return { color: "text-orange-700",  trackColor: "#F97316", label: "Significant issues", ring: "border-orange-300"  };
-  return             { color: "text-rose-700",    trackColor: "#F43F5E", label: "High concern",       ring: "border-rose-300"    };
+  if (s >= 80) return { color: "text-emerald-400", trackColor: "#34D399", label: "Looking good",       ring: "border-emerald-500/30" };
+  if (s >= 60) return { color: "text-blue-400",     trackColor: "#60A5FA", label: "Minor issues",       ring: "border-blue-500/30"     };
+  if (s >= 40) return { color: "text-amber-400",   trackColor: "#FBBF24", label: "Needs work",         ring: "border-amber-500/30"   };
+  if (s >= 20) return { color: "text-orange-400",  trackColor: "#FB923C", label: "Significant issues", ring: "border-orange-500/30"  };
+  return             { color: "text-rose-400",    trackColor: "#F87171", label: "High concern",       ring: "border-rose-500/30"    };
 }
 
 const LOADING_MSGS = [
@@ -72,9 +72,9 @@ function Shield({ size=18, cls="" }: { size?: number; cls?: string }) {
   );
 }
 
-function Tick() {
+function Tick({ cls="" }: { cls?: string }) {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-shrink-0 mt-px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`flex-shrink-0 ${cls}`}>
       <polyline points="20 6 9 17 4 12"/>
     </svg>
   );
@@ -87,7 +87,7 @@ function ScoreRing({ score, style }: { score: number; style: ReturnType<typeof s
   return (
     <div className="relative w-[68px] h-[68px] flex-shrink-0" role="img" aria-label={`Score: ${score}/100`}>
       <svg width="68" height="68" viewBox="0 0 68 68">
-        <circle cx="34" cy="34" r={r} fill="white" stroke="#E2E8F0" strokeWidth="4"/>
+        <circle cx="34" cy="34" r={r} fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="4"/>
         <circle cx="34" cy="34" r={r} fill="none" stroke={style.trackColor} strokeWidth="4" strokeLinecap="round"
           strokeDasharray={circ} strokeDashoffset={circ-(anim/100)*circ}
           transform="rotate(-90 34 34)"
@@ -95,7 +95,7 @@ function ScoreRing({ score, style }: { score: number; style: ReturnType<typeof s
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`text-[18px] font-semibold leading-none ${style.color}`}>{score}</span>
-        <span className="text-[9px] text-slate-400 mt-0.5">/100</span>
+        <span className="text-[9px] text-slate-500 mt-0.5 font-mono">/100</span>
       </div>
     </div>
   );
@@ -103,14 +103,14 @@ function ScoreRing({ score, style }: { score: number; style: ReturnType<typeof s
 
 function Skeleton() {
   return (
-    <div className="space-y-3 animate-pulse">
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
-        <div className="flex gap-4"><div className="w-[68px] h-[68px] rounded-full bg-slate-100 flex-shrink-0"/><div className="flex-1 space-y-2 pt-1"><div className="h-4 bg-slate-100 rounded w-32"/><div className="h-3 bg-slate-100 rounded w-full"/><div className="h-3 bg-slate-100 rounded w-4/5"/></div></div>
+    <div className="space-y-4 animate-pulse max-w-[640px] mx-auto mt-8">
+      <div className="bg-white/5 rounded-2xl border border-white/5 p-6">
+        <div className="flex gap-5"><div className="w-[68px] h-[68px] rounded-full bg-white/5 flex-shrink-0"/><div className="flex-1 space-y-3 pt-2"><div className="h-4 bg-white/5 rounded w-32"/><div className="h-3 bg-white/5 rounded w-full"/><div className="h-3 bg-white/5 rounded w-4/5"/></div></div>
       </div>
-      {[1,2,3].map(i=>(
-        <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 space-y-2.5">
-          <div className="flex justify-between"><div className="h-4 bg-slate-100 rounded w-40"/><div className="h-5 bg-slate-100 rounded-full w-14"/></div>
-          <div className="h-9 bg-slate-50 rounded-xl"/><div className="h-3 bg-slate-100 rounded"/><div className="h-3 bg-slate-100 rounded w-3/4"/><div className="h-10 bg-slate-50 rounded-xl"/>
+      {[1,2].map(i=>(
+        <div key={i} className="bg-white/5 rounded-2xl border border-white/5 p-6 space-y-4">
+          <div className="flex justify-between"><div className="h-4 bg-white/5 rounded w-40"/><div className="h-5 bg-white/5 rounded-full w-14"/></div>
+          <div className="h-10 bg-white/5 rounded-xl"/><div className="h-3 bg-white/5 rounded"/><div className="h-3 bg-white/5 rounded w-3/4"/><div className="h-12 bg-white/5 rounded-xl"/>
         </div>
       ))}
     </div>
@@ -151,55 +151,32 @@ export default function Home() {
     finally{setLoading(false);}
   },[msg,eu,auto,type]);
 
-  // ── Stripe checkout ───────────────────────────────────────────────────────
   const handleSubscribe = useCallback(async(planName: string, planKey: "starter"|"pro")=>{
     const priceId = PRICES[planKey];
-    console.log(`[Checkout] Starting ${planName} checkout with priceId: ${priceId}`);
-
     if(!priceId){
-      console.error("[Checkout] Missing price ID for plan:", planKey);
       setCoErr("Configuration error — price ID missing. Please contact support.");
       return;
     }
-
     setCoLoading(planName);
     setCoErr("");
-
     try{
-      console.log("[Checkout] Sending request to /api/checkout");
       const res=await fetch("/api/checkout",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({priceId}),
       });
-
-      console.log("[Checkout] Response status:", res.status);
-
       if(!res.ok){
-        const text=await res.text();
-        console.error("[Checkout] Non-OK response:", res.status, text);
-        setCoErr(`Checkout failed (${res.status}). Please try again or contact support.`);
+        setCoErr(`Checkout failed. Please try again or contact support.`);
         return;
       }
-
       const data=await res.json();
-      console.log("[Checkout] Response data:", data);
-
       if(data.error){
-        console.error("[Checkout] API error:", data.error);
         setCoErr(data.error);
         return;
       }
-      if(data.url){
-        console.log("[Checkout] Redirecting to Stripe:", data.url);
-        window.location.href=data.url;
-      }else{
-        console.error("[Checkout] No URL in response:", data);
-        setCoErr("No checkout URL returned. Please try again.");
-      }
+      if(data.url) window.location.href=data.url;
     }catch(e){
-      console.error("[Checkout] Fetch error:", e);
-      setCoErr("Network error starting checkout. Please check your connection and try again.");
+      setCoErr("Network error starting checkout. Please try again.");
     }finally{
       setCoLoading(null);
     }
@@ -215,89 +192,67 @@ export default function Home() {
   const ss=score!==null?scoreStyle(score):null;
 
   return (
-    <main className="min-h-screen bg-slate-100">
-
+    <main className="relative z-10">
       {/* ── Navbar ── */}
-      <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="text-violet-600 group-hover:text-violet-700 transition-colors"><Shield size={19}/></span>
-            <span className="text-[15px] font-semibold text-slate-900 tracking-tight">OutreachSafe</span>
-            <span className="text-[11px] bg-violet-50 text-violet-600 border border-violet-200 rounded-full px-2.5 py-[3px] font-medium">Beta</span>
+      <nav className="sticky top-0 z-[100] bg-[#0F1221]/85 backdrop-blur-xl border-b border-white/[0.07] py-3.5">
+        <div className="max-w-[960px] mx-auto px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#60A5FA] flex items-center justify-center text-white">
+              <Shield size={16}/>
+            </div>
+            <span className="text-[17px] font-extrabold text-white tracking-tight">Outreach<span className="text-[#7C3AED]">Safe</span></span>
+            <span className="bg-[#7C3AED]/15 border border-[#7C3AED]/25 text-[#A78BFA] font-mono text-[10px] px-2 py-0.5 rounded-[3px] ml-1 tracking-wider uppercase">Beta</span>
           </Link>
-          <nav className="flex items-center gap-1">
-            <a href="#pricing" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all px-3 py-1.5 rounded-lg font-medium">Pricing</a>
-            <Link href="/support" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all px-3 py-1.5 rounded-lg font-medium">Support</Link>
-            <Link href="/privacy" className="text-[13px] text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all px-3 py-1.5 rounded-lg font-medium">Privacy</Link>
-          </nav>
+          <div className="flex items-center gap-6">
+            <a href="#pricing" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Pricing</a>
+            <Link href="/support" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Support</Link>
+            <Link href="/privacy" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Privacy</Link>
+          </div>
         </div>
-      </header>
+      </nav>
 
       {/* ── Hero ── */}
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-5 py-12 sm:py-16 text-center">
-          <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-[12px] font-medium px-3 py-1.5 rounded-full border border-violet-200 mb-5 shadow-sm">
-            <Shield size={12} cls="text-violet-500"/>
-            LinkedIn guidelines · CAN-SPAM · GDPR Article 6
+      <section className="pt-20 pb-16 text-center">
+        <div className="max-w-[960px] mx-auto px-6">
+          <div className="inline-flex items-center gap-2 bg-[#7C3AED]/10 border border-[#7C3AED]/25 rounded-full px-4 py-1.5 mb-7">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#7C3AED] shadow-[0_0_6px_#7C3AED]"></div>
+            <span className="font-mono text-[11px] text-[#A78BFA] tracking-wider uppercase">LinkedIn guidelines · CAN-SPAM · GDPR Article 6</span>
           </div>
-          <h1 className="text-[1.9rem] sm:text-[2.5rem] font-bold text-slate-900 leading-[1.15] tracking-tight mb-4">
-            Know if your LinkedIn message is<br className="hidden sm:block"/> safe to send — before you hit send.
+
+          <h1 className="text-4xl md:text-[54px] font-extrabold text-white leading-[1.1] tracking-tighter mb-5 max-w-[720px] mx-auto">
+            Know if your LinkedIn message is <span className="text-[#7C3AED]">safe to send</span> — before you hit send.
           </h1>
-          <p className="text-[15px] sm:text-base text-slate-600 max-w-[460px] mx-auto mb-7 leading-relaxed">
+
+          <p className="text-[17px] text-slate-400 max-w-[520px] mx-auto mb-10 leading-relaxed font-medium">
             Paste your outreach, get a compliance score, see every flagged pattern, and receive specific improvement suggestions — in under 20 seconds.
           </p>
-          <div className="flex items-center justify-center gap-5 sm:gap-7 text-[12px] text-slate-400 flex-wrap">
-            {[
-              ["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z","No LinkedIn login"],
-              ["M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636","Messages not stored"],
-              ["M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z","Free to start"],
-            ].map(([d,t])=>(
-              <span key={t} className="flex items-center gap-1.5">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6D5FD8" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d}/></svg>
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <div className="max-w-3xl mx-auto px-5 py-7 space-y-4">
-
-        {/* ── Checker ── */}
-        <div className={`bg-white rounded-2xl border transition-all duration-200 shadow-sm ${focused?"border-violet-300 shadow-[0_0_0_3px_rgba(139,92,246,0.10)]":"border-slate-200 hover:border-slate-300"}`}>
-          <div className="p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-2.5">
-              <label htmlFor="msg-input" className="text-[13px] font-semibold text-slate-800">Paste your LinkedIn message</label>
-              <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                ~15 sec · ⌘↵ to run
-              </span>
-            </div>
-            <textarea id="msg-input" value={msg} onChange={e=>setMsg(e.target.value)} onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
-              placeholder={"Paste any LinkedIn message here — cold outreach, connection request, InMail, or follow-up.\n\nExamples you can test:\n• \"Hi [First Name], I know you're struggling with your sales numbers…\"\n• \"LIMITED TIME OFFER — click here to book a call TODAY!\"\n• \"I send this to everyone who might benefit from our solution…\"\n\nOr paste your own message to check it for compliance patterns."}
-              rows={8} aria-label="LinkedIn message to analyze"
-              className="w-full text-[13.5px] text-slate-900 border border-slate-200 rounded-xl p-4 resize-none focus:outline-none focus:ring-0 focus:border-violet-300 placeholder-slate-400/70 leading-[1.65] transition-colors bg-slate-50/50 min-h-[180px]"
+          {/* ── Analyzer ── */}
+          <div className={`max-w-[640px] mx-auto bg-white/[0.03] border rounded-2xl p-6 text-left transition-all duration-300 ${focused?"border-[#7C3AED]/50 shadow-[0_0_40px_rgba(124,58,237,0.1)]":"border-[#7C3AED]/25"}`}>
+            <textarea
+              value={msg}
+              onChange={e=>setMsg(e.target.value)}
+              onFocus={()=>setFocused(true)}
+              onBlur={()=>setFocused(false)}
+              placeholder={"Paste your LinkedIn message here...\n\n~15 sec · ⌘↵ to run"}
+              className="w-full bg-white/[0.04] border border-white/[0.07] rounded-xl p-4 text-slate-300 placeholder:text-slate-600 text-[14px] leading-relaxed resize-none h-[140px] focus:outline-none focus:border-[#7C3AED]/40 transition-colors"
             />
-            <div className="flex justify-between items-center mt-2 mb-4">
-              <p className="text-[11.5px] text-slate-500 flex items-center gap-1.5"><Shield size={11} cls="text-slate-400"/>Checks 30+ LinkedIn, CAN-SPAM &amp; GDPR patterns</p>
-              <div className="flex items-center gap-2.5 text-[11.5px]">
-                {msg.length>0&&<span className="text-slate-400">{msg.length} chars</span>}
-                <span className={tooLong?"text-amber-500 font-medium":"text-slate-400"}>{words} words{tooLong&&" · consider shortening"}</span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+            <div className="flex flex-wrap gap-4 mt-4">
               {([
-                {label:"EU recipient?",  state:eu,   set:setEu,   opts:["yes","no","unknown"]},
-                {label:"Automation tool?",state:auto,set:setAuto, opts:["yes","no"]},
-                {label:"Outreach type",  state:type, set:setType, opts:["cold","warm","connection"]},
+                {label:"EU RECIPIENT?",  state:eu,   set:setEu,   opts:["yes","no","unknown"]},
+                {label:"AUTOMATION TOOL?",state:auto,set:setAuto, opts:["yes","no"]},
+                {label:"OUTREACH TYPE",  state:type, set:setType, opts:["cold","warm","connection"]},
               ] as const).map(({label,state,set,opts})=>(
-                <div key={label}>
-                  <p className="text-[11.5px] font-medium text-slate-600 mb-1.5">{label}</p>
-                  <div className="flex gap-1.5 flex-wrap">
+                <div key={label} className="flex flex-col gap-1.5">
+                  <span className="font-mono text-[9px] text-slate-500 tracking-widest uppercase">{label}</span>
+                  <div className="flex gap-1.5">
                     {opts.map((o:string)=>(
-                      <button key={o} type="button" aria-pressed={state===o} onClick={()=>(set as (v:string)=>void)(o)}
-                        className={`text-[12px] px-3 py-1.5 rounded-lg border font-medium transition-all duration-150 ${state===o?"bg-violet-600 border-violet-600 text-white shadow-sm":"bg-white border-slate-200 text-slate-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"}`}>
+                      <button
+                        key={o}
+                        onClick={()=>(set as (v:string)=>void)(o)}
+                        className={`text-[11px] px-2.5 py-1 rounded-full border transition-all duration-200 ${state===o?"bg-[#7C3AED]/15 border-[#7C3AED]/40 text-[#A78BFA]":"bg-transparent border-white/[0.07] text-slate-500 hover:text-slate-300"}`}
+                      >
                         {o.charAt(0).toUpperCase()+o.slice(1)}
                       </button>
                     ))}
@@ -306,182 +261,268 @@ export default function Home() {
               ))}
             </div>
 
-            <button type="button" onClick={handleCheck} disabled={loading||!msg.trim()} aria-busy={loading}
-              className="w-full font-semibold text-[13.5px] py-3.5 rounded-xl transition-all duration-200 disabled:cursor-not-allowed text-white border border-violet-800/20 hover:-translate-y-px active:translate-y-0 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
-              style={{background:loading||!msg.trim()?"linear-gradient(180deg,#A78BFA,#8B5CF6)":"linear-gradient(180deg,#7C3AED,#4F46E5)",boxShadow:loading||!msg.trim()?"none":"0 2px 10px rgba(109,40,217,0.4),inset 0 1px 0 rgba(255,255,255,0.15)"}}>
-              {loading?(
+            <button
+              onClick={handleCheck}
+              disabled={loading||!msg.trim()}
+              className="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] text-white font-bold text-[15px] shadow-[0_8px_24px_rgba(124,58,237,0.3)] hover:shadow-[0_12px_32px_rgba(124,58,237,0.4)] hover:-translate-y-px active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+            >
+              {loading ? (
                 <span className="flex items-center justify-center gap-2.5">
-                  <svg className="animate-spin h-4 w-4 opacity-75" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
                   {LOADING_MSGS[lIdx]}
                 </span>
-              ):(
-                <span className="flex items-center justify-center gap-2"><Shield size={15}/>Analyze my message</span>
+              ) : (
+                "Analyze my message"
               )}
             </button>
 
-            {loading&&(
-              <div className="flex items-center justify-center gap-1.5 mt-3" role="status" aria-live="polite">
-                {LOADING_MSGS.map((_,i)=>(
-                  <div key={i} className={`rounded-full transition-all duration-500 ${i===lIdx?"w-2 h-2 bg-violet-500":"w-1.5 h-1.5 bg-slate-300"}`} aria-hidden="true"/>
-                ))}
-              </div>
-            )}
-
-            <p className="text-center text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Powered by Claude AI · analysis runs privately
+            <p className="mt-3 text-center font-mono text-[11px] text-slate-600">
+              Powered by <span className="text-[#A78BFA]">Claude AI</span> · analysis runs privately
             </p>
 
-            {err&&<p className="mt-3 text-[13px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5" role="alert">{err}</p>}
+            {err&&<p className="mt-4 text-[13px] text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3">{err}</p>}
           </div>
-        </div>
 
-        {loading&&<Skeleton/>}
-
-        {/* ── Results ── */}
-        {result&&risk&&score!==null&&ss&&(
-          <div ref={ref} className="space-y-3">
-            <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-5 shadow-sm`}>
-              <div className="flex items-start gap-4">
-                <ScoreRing score={score} style={ss}/>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[13px] font-semibold ${risk.text}`}>{risk.label}</span>
-                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/70 border ${risk.border} ${risk.text}`}>{ss.label}</span>
-                    </div>
-                    <div className="flex gap-3 text-[12px] text-slate-500">
-                      <span><span className="font-semibold text-slate-800">{result.violations.length}</span> flagged</span>
-                      <span><span className="font-semibold text-slate-800">{result.passed_rules_count}</span> passed</span>
-                    </div>
-                  </div>
-                  <p className={`text-[13px] ${risk.text} leading-relaxed`}>{result.summary}</p>
-                  {result.violations.length>0&&(
-                    <div className="flex gap-1.5 mt-2 flex-wrap">
-                      {(["high","medium","low"] as const).map(s=>{const c=result.violations.filter(v=>v.severity===s).length;if(!c)return null;return<span key={s} className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${SEV[s].badge}`}>{c} {s}</span>;})}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-slate-400 text-center">Analysis is informational only — not legal advice. Not affiliated with LinkedIn, Meta, or any platform referenced.</p>
-
-            {result.violations.length===0&&(
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center shadow-sm">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto mb-3">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <p className="text-emerald-800 font-semibold text-[14px] mb-1">No patterns flagged</p>
-                <p className="text-emerald-700 text-[13px]">This message looks clean across all 30+ checks. Score: {score}/100.</p>
-              </div>
-            )}
-
-            {result.violations.map((v,i)=>{const s=SEV[v.severity];return(
-              <div key={i} className={`rounded-2xl border ${s.border} ${s.bg} p-5 shadow-sm hover:shadow-md transition-shadow duration-200`}>
-                <div className="flex items-start justify-between mb-3 gap-2">
-                  <div className="flex items-center gap-2 min-w-0"><div className={`w-2 h-2 rounded-full flex-shrink-0 mt-[3px] ${s.dot}`} aria-hidden="true"/><span className="text-[13px] font-semibold text-slate-900">{v.rule_name}</span></div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0"><span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${s.badge}`}>{s.label}</span><span className="text-[10px] text-slate-400 font-mono bg-white/70 px-1.5 py-0.5 rounded-md border border-white">{v.rule_id}</span></div>
-                </div>
-                <div className="space-y-2 text-[13px]">
-                  <div className="bg-white/60 rounded-xl px-3.5 py-2.5 border border-white/80"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] mr-1.5">Pattern</span><span className="text-slate-700 italic">&ldquo;{v.triggered_text}&rdquo;</span></div>
-                  <div className="px-0.5"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] mr-1.5">Why it matters</span><span className="text-slate-700 leading-relaxed">{v.explanation}</span></div>
-                  <div className="bg-white/80 rounded-xl px-3.5 py-2.5 border border-white shadow-sm"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.08em] mr-1.5">Suggestion</span><span className="text-slate-900 leading-relaxed">{v.fix}</span></div>
-                </div>
-              </div>
-            );})}
-
-            {result.violations.length>0&&(
-              <div className="text-center py-2">
-                <button type="button" onClick={()=>{setResult(null);window.scrollTo({top:0,behavior:"smooth"});}}
-                  className="text-[13px] text-violet-600 hover:text-violet-800 font-medium transition-colors inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-violet-50">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-                  Edit and re-analyze
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── How it works ── */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
-          <h2 className="text-[13px] font-semibold text-slate-900 mb-5">How it works</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            {[{n:"1",t:"Paste your message",d:"Drop in any LinkedIn outreach — InMail, DM, or connection request"},{n:"2",t:"Run the analysis",d:"AI checks 30+ compliance patterns across 4 regulatory frameworks"},{n:"3",t:"Apply suggestions",d:"Fix flagged patterns, re-analyze until clean, then send confidently"}].map(({n,t,d})=>(
-              <div key={n} className="group">
-                <div className="w-8 h-8 rounded-full bg-violet-600 text-white text-[13px] font-semibold flex items-center justify-center mx-auto mb-2.5 group-hover:bg-violet-700 transition-colors shadow-sm">{n}</div>
-                <p className="text-[12px] font-semibold text-slate-800 mb-1 leading-snug">{t}</p>
-                <p className="text-[11.5px] text-slate-500 leading-relaxed">{d}</p>
+          {/* ── Trust Pills ── */}
+          <div className="flex flex-wrap justify-center gap-3 mt-10">
+            {[
+              "No LinkedIn login",
+              "Messages not stored",
+              "Free to start"
+            ].map(t=>(
+              <div key={t} className="flex items-center gap-2 bg-white/[0.02] border border-white/[0.07] rounded-full px-4 py-2 text-[12px] text-slate-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#34D399]"></div>
+                {t}
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* ── Pricing ── */}
-        <div id="pricing" className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
-          <h2 className="text-[13px] font-semibold text-slate-900 mb-0.5">Pricing</h2>
-          <p className="text-[12px] text-slate-500 mb-5">Start free — no credit card, no account required.</p>
+      {/* ── Results ── */}
+      <div className="max-w-[640px] mx-auto px-6 pb-20">
+        {loading&&<Skeleton/>}
+        {result&&risk&&score!==null&&ss&&(
+          <div ref={ref} className="space-y-4 pt-8">
+            <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-6 shadow-xl`}>
+              <div className="flex items-start gap-5">
+                <ScoreRing score={score} style={ss}/>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[14px] font-bold ${risk.text}`}>{risk.label}</span>
+                      <span className="bg-white/5 border border-white/10 text-slate-400 font-mono text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">{ss.label}</span>
+                    </div>
+                    <div className="text-[12px] text-slate-500 font-medium">
+                      <span className="text-slate-300">{result.violations.length}</span> flagged · <span className="text-slate-300">{result.passed_rules_count}</span> passed
+                    </div>
+                  </div>
+                  <p className="text-[13.5px] text-slate-300 leading-relaxed mb-3">{result.summary}</p>
+                  <div className="flex gap-2">
+                    {(["high","medium","low"] as const).map(s=>{const c=result.violations.filter(v=>v.severity===s).length;if(!c)return null;return<span key={s} className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${SEV[s].badge}`}>{c} {s}</span>;})}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-600 text-center font-mono">Analysis is informational only — not legal advice. Not affiliated with LinkedIn.</p>
+
+            {result.violations.length===0&&(
+              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-8 text-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                  <Tick cls="text-[#34D399] w-6 h-6"/>
+                </div>
+                <h3 className="text-white font-bold text-[16px] mb-1">No patterns flagged</h3>
+                <p className="text-slate-400 text-[14px]">This message looks clean across all 30+ checks. Score: {score}/100.</p>
+              </div>
+            )}
+
+            {result.violations.map((v,i)=>{const s=SEV[v.severity];return(
+              <div key={i} className={`rounded-2xl border ${s.border} ${s.bg} p-6 hover:bg-white/[0.04] transition-colors duration-300`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-2 h-2 rounded-full mt-1 ${s.dot} shadow-[0_0_6px_currentColor]`}/>
+                    <span className="text-[14px] font-bold text-white">{v.rule_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${s.badge}`}>{s.label}</span>
+                    <span className="text-[10px] text-slate-500 font-mono bg-white/5 px-2 py-0.5 rounded border border-white/5">{v.rule_id}</span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                    <span className="block font-mono text-[9px] text-slate-500 tracking-widest uppercase mb-1">Pattern</span>
+                    <span className="text-slate-300 italic text-[13px] leading-relaxed">&ldquo;{v.triggered_text}&rdquo;</span>
+                  </div>
+                  <div>
+                    <span className="block font-mono text-[9px] text-slate-500 tracking-widest uppercase mb-1">Why it matters</span>
+                    <span className="text-slate-400 text-[13.5px] leading-relaxed">{v.explanation}</span>
+                  </div>
+                  <div className="bg-[#7C3AED]/10 rounded-xl px-4 py-3 border border-[#7C3AED]/20">
+                    <span className="block font-mono text-[9px] text-[#A78BFA] tracking-widest uppercase mb-1">Suggestion</span>
+                    <span className="text-[#E2E8F0] text-[13.5px] font-medium leading-relaxed">{v.fix}</span>
+                  </div>
+                </div>
+              </div>
+            );})}
+
+            <div className="text-center pt-4">
+              <button onClick={()=>{setResult(null);window.scrollTo({top:0,behavior:"smooth"});}}
+                className="text-[13px] text-[#A78BFA] hover:text-white font-semibold transition-colors flex items-center gap-2 mx-auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Edit and re-analyze
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── How it works ── */}
+      <section className="py-24 border-t border-white/[0.05]">
+        <div className="max-w-[960px] mx-auto px-6">
+          <div className="font-mono text-[11px] text-[#7C3AED] tracking-[0.2em] text-center mb-4 font-bold uppercase">How it works</div>
+          <h2 className="text-3xl font-extrabold text-white text-center tracking-tight mb-14">Three steps to <span className="text-[#7C3AED]">compliant outreach</span></h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { n: "1", t: "Paste your message", d: "Drop in any LinkedIn outreach — InMail, DM, or connection request. No account needed." },
+              { n: "2", t: "Run the analysis", d: "AI checks 30+ compliance patterns across LinkedIn ToS, CAN-SPAM, GDPR, and spam signals." },
+              { n: "3", t: "Apply suggestions", d: "Fix flagged patterns, re-analyze until clean, then send confidently. Most fixes take under 5 minutes." }
+            ].map(s=>(
+              <div key={s.n} className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-8 hover:border-[#7C3AED]/30 hover:bg-white/[0.04] transition-all group">
+                <div className="w-9 h-9 rounded-xl bg-[#7C3AED]/15 border border-[#7C3AED]/30 flex items-center justify-center font-mono text-[14px] font-bold text-[#A78BFA] mb-5 group-hover:scale-110 transition-transform">
+                  {s.n}
+                </div>
+                <h3 className="text-[17px] font-bold text-white mb-2.5">{s.t}</h3>
+                <p className="text-[14px] text-slate-500 leading-relaxed font-medium">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ── */}
+      <section id="pricing" className="py-24 border-t border-white/[0.05]">
+        <div className="max-w-[960px] mx-auto px-6">
+          <div className="font-mono text-[11px] text-[#7C3AED] tracking-[0.2em] text-center mb-4 font-bold uppercase">Pricing</div>
+          <h2 className="text-3xl font-extrabold text-white text-center tracking-tight mb-12">Start free. <span className="text-[#7C3AED]">Upgrade when ready.</span></h2>
 
           {coErr&&(
-            <div className="mb-4 text-[12px] text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3" role="alert">
-              <strong>Checkout error:</strong> {coErr}
-              <button onClick={()=>setCoErr("")} className="ml-2 text-rose-400 hover:text-rose-600" aria-label="Dismiss">✕</button>
+            <div className="max-w-[640px] mx-auto mb-8 text-[13px] text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 flex justify-between items-center">
+              <span><strong>Checkout error:</strong> {coErr}</span>
+              <button onClick={()=>setCoErr("")} className="text-rose-400 hover:text-white">✕</button>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              {name:"Free",    price:"$0",  period:"forever", key:null,        desc:"For occasional checking",      features:["5 analyses per day","30+ compliance patterns","Compliance score 0–100","Improvement suggestions"],                              featured:false,cta:"Start free"},
-              {name:"Starter", price:"$19", period:"/month",  key:"starter",   desc:"For active SDRs and founders", features:["200 analyses per month","Chrome extension (in-context)","CAN-SPAM + GDPR deep scan","Weekly digest email","Message history"],  featured:true, cta:"Get Starter"},
-              {name:"Pro",     price:"$49", period:"/month",  key:"pro",       desc:"For sales teams and agencies", features:["Unlimited analyses","3 team seats (+$12/extra)","API access","Bulk template scanner","Priority support"],                       featured:false,cta:"Get Pro"},
-            ].map(({name,price,period,key,desc,features,featured,cta})=>{
-              const isLoading=coLoading===name;
-              return(
-                <div key={name} className={`relative rounded-xl p-4 transition-all duration-200 hover:-translate-y-px ${featured?"border-2 border-violet-600 shadow-lg shadow-violet-100":"border border-slate-200 hover:border-slate-300 shadow-sm"}`}
-                  style={featured?{background:"#FAFAFF"}:{background:"#FFFFFF"}}>
-                  {featured&&<div className="absolute -top-[13px] left-1/2 -translate-x-1/2 text-white text-[11px] font-semibold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm" style={{background:"linear-gradient(180deg,#7C3AED,#4F46E5)"}}>Most popular</div>}
-                  <p className="font-semibold text-[13px] text-slate-900 mb-0.5">{name}</p>
-                  <div className="flex items-baseline gap-1 mb-0.5">
-                    <span className="text-[22px] font-bold text-slate-900 leading-none">{price}</span>
-                    <span className="text-[11px] text-slate-500">{period}</span>
+              {
+                name: "FREE",
+                price: "0",
+                period: "forever · no credit card",
+                tier: "pt-free",
+                cta: "Start free",
+                ctaClass: "cta-free bg-white/[0.04] border border-white/[0.07] text-slate-400",
+                features: [
+                  ["✓", "5 analyses per day", true],
+                  ["✓", "30+ compliance patterns", false],
+                  ["✓", "Compliance score 0–100", false],
+                  ["✓", "Improvement suggestions", false],
+                  ["✗", "Chrome extension", false, true],
+                  ["✗", "CAN-SPAM deep scan", false, true],
+                  ["✗", "GDPR deep scan", false, true],
+                  ["✗", "Message history", false, true],
+                ]
+              },
+              {
+                name: "STARTER",
+                price: "19",
+                period: "per month",
+                tier: "pt-starter",
+                cta: "Get Starter",
+                ctaClass: "cta-starter bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] text-white shadow-[0_6px_20px_rgba(124,58,237,0.3)]",
+                featured: true,
+                features: [
+                  ["✓", "200 analyses per month", true],
+                  ["✓", "Chrome extension (soon)", true],
+                  ["✓", "CAN-SPAM deep scan", true],
+                  ["✓", "GDPR Article 6 scan", true],
+                  ["✓", "Message history", true],
+                  ["✓", "All 30+ patterns", false],
+                  ["✗", "Team seats", false, true],
+                  ["✗", "API access", false, true],
+                ]
+              },
+              {
+                name: "PRO",
+                price: "49",
+                period: "per month",
+                tier: "pt-pro",
+                cta: "Get Pro",
+                ctaClass: "cta-pro bg-[#60A5FA]/10 border border-[#60A5FA]/20 text-[#60A5FA]",
+                features: [
+                  ["✓", "Unlimited analyses", true],
+                  ["✓", "Everything in Starter", true],
+                  ["✓", "3 team seats (+$12/ea)", true],
+                  ["✓", "API access", true],
+                  ["✓", "Bulk template scanner", true],
+                  ["✓", "Priority support", false],
+                  ["✓", "Annual billing (2mo free)", false],
+                ]
+              }
+            ].map(p=>(
+              <div key={p.name} className={`relative flex flex-col bg-white/[0.02] border rounded-2xl p-8 hover:border-[#7C3AED]/30 transition-all ${p.featured?"border-[#7C3AED]/40 bg-[#7C3AED]/[0.05]":"border-white/[0.07]"}`}>
+                {p.featured&&(
+                  <>
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7C3AED] to-[#60A5FA]"></div>
+                    <div className="absolute top-4 right-4 bg-gradient-to-br from-[#7C3AED] to-[#60A5FA] text-white font-mono text-[9px] font-bold px-2 py-1 rounded-[3px] tracking-wider uppercase">Most Popular</div>
+                  </>
+                )}
+                <div className={`font-mono text-[11px] tracking-widest font-bold mb-4 ${p.tier==="pt-free"?"text-slate-600":p.tier==="pt-starter"?"text-[#7C3AED]":"text-[#60A5FA]"}`}>{p.name}</div>
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-white tracking-tighter"><sup>$</sup>{p.price}</span>
                   </div>
-                  <p className="text-[11.5px] text-slate-500 mb-3.5">{desc}</p>
-                  <div className="space-y-1.5 mb-4">
-                    {features.map(f=>(
-                      <div key={f} className="flex items-start gap-1.5 text-[12px] text-slate-700"><Tick/><span>{f}</span></div>
-                    ))}
-                  </div>
-                  <button type="button"
-                    disabled={isLoading||(key!==null&&coLoading!==null)}
-                    onClick={()=>key&&handleSubscribe(name,key as "starter"|"pro")}
-                    className={`w-full text-[12px] font-semibold py-2.5 rounded-lg transition-all duration-150 disabled:cursor-not-allowed ${featured?"text-white border border-violet-800/20":"bg-white hover:bg-violet-50 text-slate-700 border border-slate-300 hover:border-violet-400 hover:text-violet-700"}`}
-                    style={featured?{background:isLoading?"linear-gradient(180deg,#A78BFA,#8B5CF6)":"linear-gradient(180deg,#7C3AED,#4F46E5)",boxShadow:isLoading?"none":"0 2px 8px rgba(109,40,217,0.35)"}:undefined}>
-                    {isLoading?(
-                      <span className="flex items-center justify-center gap-1.5">
-                        <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                        Redirecting…
-                      </span>
-                    ):cta}
-                  </button>
+                  <div className="font-mono text-[11px] text-slate-500 mt-2">{p.period}</div>
                 </div>
-              );
-            })}
+                <div className="w-full h-px bg-white/[0.07] mb-6"></div>
+                <div className="flex-1 space-y-3.5 mb-8">
+                  {p.features.map((f,idx)=>(
+                    <div key={idx} className="flex items-start gap-3">
+                      <span className={`text-[13px] flex-shrink-0 ${f[0]==="✓"?"text-[#34D399]":"text-slate-800"}`}>{f[0]}</span>
+                      <span className={`text-[13px] ${f[3]?"text-slate-700":f[2]?"text-slate-300 font-bold":"text-slate-400"}`}>{f[1]}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={()=>p.price!=="0" && handleSubscribe(p.name, p.name.toLowerCase() as "starter"|"pro")}
+                  className={`w-full py-3 rounded-xl font-mono text-[13px] font-bold transition-all duration-200 hover:-translate-y-px active:translate-y-0 ${p.ctaClass}`}
+                >
+                  {coLoading===p.name ? "Redirecting..." : p.cta}
+                </button>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* ── Footer ── */}
-        <footer className="border-t border-slate-200 pt-5 pb-6" role="contentinfo">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-slate-500">
-            <div className="flex items-center gap-1.5"><Shield size={11} cls="text-slate-400"/><span>© 2026 Cyber Global Technologies LLC</span></div>
-            <div className="flex items-center gap-4">
-              <Link href="/support" className="hover:text-violet-600 hover:underline decoration-violet-300 underline-offset-2 transition-all">Support</Link>
-              <Link href="/privacy" className="hover:text-violet-600 hover:underline decoration-violet-300 underline-offset-2 transition-all">Privacy Policy</Link>
-              <Link href="/terms"   className="hover:text-violet-600 hover:underline decoration-violet-300 underline-offset-2 transition-all">Terms of Service</Link>
-            </div>
-            <span className="text-center text-[11px] text-slate-400">Informational only · Not legal advice · Not affiliated with LinkedIn</span>
+      {/* ── Footer ── */}
+      <footer className="py-12 border-t border-white/[0.05] text-center">
+        <div className="max-w-[960px] mx-auto px-6">
+          <div className="text-[17px] font-extrabold text-white tracking-tight mb-5">Outreach<span className="text-[#7C3AED]">Safe</span></div>
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
+            <Link href="/support" className="text-[12px] text-slate-500 hover:text-white transition-colors">Support</Link>
+            <Link href="/privacy" className="text-[12px] text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-[12px] text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
           </div>
-        </footer>
-      </div>
+          <p className="font-mono text-[11px] text-slate-700 leading-relaxed max-w-lg mx-auto">
+            © 2026 Cyber Global Technologies LLC · Informational only · Not legal advice · Not affiliated with LinkedIn
+          </p>
+        </div>
+      </footer>
+
+      {/* Bottom Accent */}
+      <div className="fixed bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#7C3AED] via-[#60A5FA] to-transparent z-[100]"></div>
     </main>
   );
 }

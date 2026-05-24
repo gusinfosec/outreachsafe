@@ -49,159 +49,115 @@ const FAQS = [
   },
 ];
 
-function ShieldIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      <path d="M9 12l2 2 4-4"/>
-    </svg>
-  );
-}
-
 export default function SupportPage() {
   return (
-    <main className="min-h-screen bg-slate-50">
-
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-5 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <ShieldIcon />
-            <span className="text-[15px] font-semibold text-slate-900 tracking-tight">OutreachSafe</span>
+    <main className="relative z-10">
+      {/* ── Navbar ── */}
+      <nav className="sticky top-0 z-[100] bg-[#0F1221]/90 backdrop-blur-xl border-b border-white/[0.07] py-3.5">
+        <div className="max-w-[720px] mx-auto px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#60A5FA] flex items-center justify-center text-white">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <span className="text-[16px] font-extrabold text-white tracking-tight">Outreach<span className="text-[#7C3AED]">Safe</span></span>
           </Link>
-          <Link href="/" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">← Back to app</Link>
+          <Link href="/" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">← Back to app</Link>
         </div>
-      </header>
+      </nav>
 
-      <div className="max-w-3xl mx-auto px-5 py-10 space-y-6">
+      <div className="max-w-[720px] mx-auto px-6 pt-16 pb-20">
+        <div className="font-mono text-[11px] text-slate-500 tracking-[0.2em] mb-3 uppercase font-bold">Support</div>
+        <h1 className="text-4xl font-extrabold text-white leading-tight tracking-tighter mb-4">How can we help?</h1>
+        <p className="text-[15px] text-slate-400 mb-10 pb-8 border-b border-white/[0.07] leading-relaxed">
+          Find answers to common questions below, or reach out directly. We respond to all emails within 24 hours.
+        </p>
 
-        {/* Hero */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-violet-50 border border-violet-200 flex items-center justify-center mx-auto mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="M9 12l2 2 4-4"/>
-            </svg>
+        {/* Email CTA */}
+        <div className="bg-[#7C3AED]/10 border border-[#7C3AED]/25 rounded-2xl p-8 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex-1">
+            <h2 className="text-[16px] font-bold text-white mb-2">Email support</h2>
+            <p className="text-[13px] text-slate-400 leading-relaxed">
+              Billing questions, account issues, bug reports — we respond within 24 hours on weekdays.
+            </p>
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900 mb-2">How can we help?</h1>
-          <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-            Find answers to common questions below, or reach out directly. We respond to all emails within 24 hours.
-          </p>
-        </div>
-
-        {/* Contact card */}
-        <div className="bg-violet-50 rounded-2xl border border-violet-200 p-6 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center flex-shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-[14px] font-semibold text-violet-900 mb-1">Email support</h2>
-              <p className="text-[13px] text-violet-700 mb-3 leading-relaxed">
-                For billing questions, account issues, bug reports, or anything else — email us directly. We respond within 24 hours on weekdays.
-              </p>
-              <a
-                href="mailto:hello@outreachsafe.com"
-                className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                hello@outreachsafe.com
-              </a>
-            </div>
-          </div>
+          <a href="mailto:hello@outreachsafe.com" className="bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] text-white text-[13px] font-bold px-5 py-3 rounded-xl shadow-[0_4px_16px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] transition-all whitespace-nowrap">
+            ✉ hello@outreachsafe.com
+          </a>
         </div>
 
         {/* Quick links */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-16">
           {[
-            { icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", title: "Check a message", desc: "Go to the analyzer", href: "/" },
-            { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", title: "Privacy Policy", desc: "How we handle your data", href: "/privacy" },
-            { icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Terms of Service", desc: "Usage and billing terms", href: "/terms" },
-          ].map(({ icon, title, desc, href }) => (
-            <Link key={title} href={href}
-              className="bg-white rounded-xl border border-slate-200 p-4 hover:border-violet-300 hover:shadow-sm transition-all group">
-              <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center mb-3 group-hover:bg-violet-50 group-hover:border-violet-200 transition-colors">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d={icon}/>
-                </svg>
-              </div>
-              <p className="text-[13px] font-semibold text-slate-900 mb-0.5">{title}</p>
-              <p className="text-[12px] text-slate-500">{desc}</p>
+            { icon: "🛡️", title: "Check a message", desc: "Go to the analyzer", href: "/" },
+            { icon: "🔒", title: "Privacy Policy", desc: "How we handle your data", href: "/privacy" },
+            { icon: "📋", title: "Terms of Service", desc: "Usage and billing terms", href: "/terms" },
+          ].map((l) => (
+            <Link key={l.title} href={l.href} className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-5 hover:border-[#7C3AED]/30 hover:bg-white/[0.04] transition-all group">
+              <div className="text-xl mb-3 group-hover:scale-110 transition-transform">{l.icon}</div>
+              <p className="text-[13px] font-bold text-white mb-1">{l.title}</p>
+              <p className="text-[11px] text-slate-500 font-medium">{l.desc}</p>
             </Link>
           ))}
         </div>
 
         {/* FAQ */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-slate-100">
-            <h2 className="text-[15px] font-semibold text-slate-900">Frequently asked questions</h2>
-          </div>
-          <div className="divide-y divide-slate-100">
-            {FAQS.map(({ q, a }, i) => (
-              <details key={i} className="group">
-                <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-slate-50 transition-colors">
-                  <span className="text-[13px] font-medium text-slate-900">{q}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-                    className="flex-shrink-0 transition-transform group-open:rotate-180">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </summary>
-                <div className="px-6 pb-4 pt-0">
-                  <p className="text-[13px] text-slate-600 leading-relaxed">{a}</p>
-                </div>
-              </details>
-            ))}
-          </div>
+        <h2 className="text-[22px] font-extrabold text-white tracking-tight mb-6">Frequently asked questions</h2>
+        <div className="space-y-3 mb-16">
+          {FAQS.map((f, i) => (
+            <details key={i} className="bg-white/[0.02] border border-white/[0.07] rounded-xl overflow-hidden group">
+              <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none hover:bg-white/[0.04] transition-colors">
+                <span className="text-[14px] font-bold text-slate-300">{f.q}</span>
+                <span className="text-[#7C3AED] text-lg font-mono leading-none transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <div className="px-6 pb-5 pt-0 border-t border-white/[0.07] mt-[-1px]">
+                <p className="text-[13px] text-slate-400 leading-relaxed pt-4">{f.a}</p>
+              </div>
+            </details>
+          ))}
         </div>
 
-        {/* Chrome extension section */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-[14px] font-semibold text-slate-900 mb-4">Chrome extension</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { step: "1", t: "Install from Chrome Web Store", d: "Search OutreachSafe or visit the store directly" },
-              { step: "2", t: "Open LinkedIn messaging", d: "Go to any DM, InMail, or connection request" },
-              { step: "3", t: "Click the Check button", d: "Purple button appears below the compose box" },
-              { step: "4", t: "See results in the sidebar", d: "Score, violations, and fixes slide in from the right" },
-            ].map(({ step, t, d }) => (
-              <div key={step} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="w-7 h-7 rounded-full bg-violet-600 text-white text-[12px] font-semibold flex items-center justify-center flex-shrink-0">{step}</div>
-                <div>
-                  <p className="text-[12px] font-semibold text-slate-900 mb-0.5">{t}</p>
-                  <p className="text-[11.5px] text-slate-500">{d}</p>
-                </div>
+        {/* Chrome Extension Steps */}
+        <h2 className="text-[22px] font-extrabold text-white tracking-tight mb-6">Chrome extension setup</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+          {[
+            { step: "1", t: "Install from Chrome Web Store", d: "Search OutreachSafe or visit the store directly and click Add to Chrome." },
+            { step: "2", t: "Open LinkedIn messaging", d: "Go to any DM, InMail, or connection request compose window." },
+            { step: "3", t: "Click the Check button", d: "Purple button appears below the compose box automatically." },
+            { step: "4", t: "See results in the sidebar", d: "Score, violations, and specific fixes slide in from the right." },
+          ].map((s) => (
+            <div key={s.step} className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-6">
+              <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/15 border border-[#7C3AED]/30 flex items-center justify-center font-mono text-[13px] font-bold text-[#A78BFA] mb-4">
+                {s.step}
               </div>
-            ))}
-          </div>
+              <h3 className="text-[14px] font-bold text-white mb-2">{s.t}</h3>
+              <p className="text-[12px] text-slate-400 leading-relaxed">{s.d}</p>
+            </div>
+          ))}
         </div>
 
         {/* Still need help */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 text-center shadow-sm">
-          <p className="text-[14px] font-semibold text-slate-900 mb-1">Still need help?</p>
-          <p className="text-[13px] text-slate-500 mb-4">We read every email and respond within 24 hours on weekdays.</p>
-          <a href="mailto:hello@outreachsafe.com"
-            className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm shadow-violet-200">
+        <div className="bg-[#60A5FA]/10 border border-[#60A5FA]/20 rounded-2xl p-8 text-center">
+          <h3 className="text-[18px] font-bold text-white mb-2">Still need help?</h3>
+          <p className="text-[14px] text-slate-400 mb-6">We read every email and respond within 24 hours on weekdays.</p>
+          <a href="mailto:hello@outreachsafe.com" className="inline-block bg-[#60A5FA]/10 border border-[#60A5FA]/30 text-[#60A5FA] font-bold px-6 py-2.5 rounded-xl hover:bg-[#60A5FA]/20 transition-all text-[14px]">
             Email hello@outreachsafe.com →
           </a>
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-slate-200 pt-5 pb-6 text-center text-[11.5px] text-slate-400 space-y-2">
-          <p>© 2026 Cyber Global Technologies LLC</p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/privacy" className="hover:text-violet-600 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-violet-600 transition-colors">Terms of Service</Link>
-          </div>
-          <p className="text-[11px]">Informational only · Not legal advice · Not affiliated with LinkedIn</p>
-        </footer>
-
       </div>
+
+      {/* ── Footer ── */}
+      <footer className="py-10 border-t border-white/[0.05] text-center">
+        <div className="max-w-[720px] mx-auto px-6">
+          <div className="flex flex-wrap justify-center gap-6 mb-6">
+            <Link href="/privacy" className="text-[12px] text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-[12px] text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
+          </div>
+          <p className="font-mono text-[11px] text-slate-700">
+            © 2026 Cyber Global Technologies LLC · Informational only · Not legal advice · Not affiliated with LinkedIn
+          </p>
+        </div>
+      </footer>
+      <div className="fixed bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#7C3AED] via-[#60A5FA] to-transparent z-[100]"></div>
     </main>
   );
 }

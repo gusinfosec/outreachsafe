@@ -1,37 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
+
+:root {
+  --bg: #0F1221;
+  --bg-card: rgba(255,255,255,0.02);
+  --bg-card-hover: rgba(255,255,255,0.04);
+  --purple: #7C3AED;
+  --purple-light: #A78BFA;
+  --blue: #60A5FA;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-dim: #64748B;
+  --border: rgba(255,255,255,0.07);
+  --border-purple: rgba(124,58,237,0.25);
+  --green: #34D399;
+  --red: #EF4444;
+}
 
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 body {
-  background-color: #F0F0F5;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+/* Hero glow */
+body::after {
+  content: '';
+  position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 600px; z-index: 0;
+  background: radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 textarea, input, select {
   font-size: max(16px, 1em);
 }
+
 :focus-visible {
-  outline: 2px solid #7C3AED;
+  outline: 2px solid var(--purple);
   outline-offset: 2px;
   border-radius: 6px;
 }
+
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #C4C4CF; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #9999AA; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
 .animate-spin { transition: none !important; }
+
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
   100% { background-position:  600px 0; }
 }
+
 .shimmer {
-  background: linear-gradient(90deg, #EBEBF0 25%, #E0E0E8 50%, #EBEBF0 75%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
   background-size: 600px 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
 button, a, input, textarea, [role="button"] {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform, outline-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
 }
