@@ -96,8 +96,6 @@ OutreachSafe is one of three compliance products built by Cyber Global Technolog
 - **Enterprise inquiries:** [hello@outreachsafe.com](mailto:hello@outreachsafe.com)
 
 ---
-
-<p align="center">
-  © 2026 Cyber Global Technologies LLC. All rights reserved.<br/>
-  Released under the <a href="./LICENSE">MIT License</a>.
-</p>
+© 2026 Cyber Global Technologies LLC. All rights reserved.  
+Built by [Fretz Olivares](https://www.linkedin.com/in/fretz-olivares/) — [Cyber Global Technologies](https://cyberglobal.ai)  
+Enterprise inquiries: info@cyberglobal.ai
