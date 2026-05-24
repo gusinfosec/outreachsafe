@@ -12,21 +12,19 @@
 
 ---
 
-**Compliance checking for sales outreach — before you hit send.**
+**OutreachSafe checks LinkedIn messages and email outreach for compliance risks before they are sent.**
+
+**Built for SDRs, sales teams, and revenue operations teams that need GDPR, CAN-SPAM, and LinkedIn ToS guardrails.**
 
 ---
 
-OutreachSafe checks your LinkedIn messages and email outreach against GDPR, CAN-SPAM, and LinkedIn Terms of Service in real time. It flags violations before you send, so your sales team stays compliant without slowing down. Built for SDRs, sales ops, and revenue teams at regulated companies.
+## Product Description
+
+OutreachSafe reviews sales outreach against GDPR, CAN-SPAM, LinkedIn Terms of Service, tone, and spam-risk signals in real time. It flags risky language before send so teams can move faster without creating avoidable compliance issues.
 
 ---
 
-## ⚡ Live Demo
-
-**[Try it free at outreachsafe.com](https://www.outreachsafe.com)** — no account required.
-
----
-
-## 🔍 What It Checks
+## Key Features
 
 | Framework | What it covers | Who it affects |
 |---|---|---|
@@ -37,11 +35,17 @@ OutreachSafe checks your LinkedIn messages and email outreach against GDPR, CAN-
 
 ---
 
-## 🚀 How It Works
+## How to Use
 
 1. Install the Chrome extension or open the web app
 2. Paste your message or write directly in LinkedIn
 3. Get instant compliance feedback before you hit send
+
+---
+
+## ⚡ Live Demo
+
+**[Try it free at outreachsafe.com](https://www.outreachsafe.com)** — no account required.
 
 ---
 
@@ -89,7 +93,7 @@ OutreachSafe is one of three compliance products built by Cyber Global Technolog
 
 ---
 
-## 🌐 Connect
+## Contact / Support
 
 - **Website:** [outreachsafe.com](https://www.outreachsafe.com)
 - **Built by:** Fretz Olivares — [Cyber Global Technologies](https://www.cyberglobal.ai)
