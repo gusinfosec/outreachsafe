@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
+import NavAuth from "../components/NavAuth";
 
 export const metadata: Metadata = {
   title: "Support — OutreachSafe",
@@ -69,16 +69,7 @@ export default function SupportPage() {
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">← Back to app</Link>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-[12px] font-semibold text-white bg-[#7C3AED] hover:bg-[#6D28D9] px-3 py-1 rounded-lg transition-colors">
-                  Sign In
-                </button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+            <NavAuth btnClass="text-[12px] font-semibold text-white bg-[#7C3AED] hover:bg-[#6D28D9] px-3 py-1 rounded-lg transition-colors" />
           </div>
         </div>
       </nav>

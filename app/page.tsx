@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
+import NavAuth from "./components/NavAuth";
 
 type Severity = "high" | "medium" | "low";
 type Risk     = "high" | "medium" | "low" | "clean";
@@ -120,7 +120,6 @@ function Skeleton() {
 }
 
 export default function Home() {
-  const { user } = useUser();
   const [msg,     setMsg]     = useState("");
   const [eu,      setEu]      = useState("unknown");
   const [auto,    setAuto]    = useState("no");
@@ -215,25 +214,7 @@ export default function Home() {
             <Link href="/support" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Support</Link>
             <Link href="/privacy" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Privacy</Link>
             
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-[13px] font-semibold text-white bg-[#7C3AED] hover:bg-[#6D28D9] px-4 py-1.5 rounded-lg transition-colors">
-                  Sign In
-                </button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <div className="flex items-center gap-3">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
-                  user?.publicMetadata?.plan === "pro" ? "border-blue-500/30 text-blue-400 bg-blue-500/10" :
-                  user?.publicMetadata?.plan === "starter" ? "border-[#7C3AED]/30 text-[#A78BFA] bg-[#7C3AED]/10" :
-                  "border-slate-500/30 text-slate-400 bg-slate-500/10"
-                }`}>
-                  {((user?.publicMetadata?.plan as string) || "FREE").toUpperCase()}
-                </span>
-                <UserButton />
-              </div>
-            </SignedIn>
+            <NavAuth showPlan />
           </div>
         </div>
       </nav>
