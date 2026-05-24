@@ -2,6 +2,7 @@
 // Rate limiter moved inline — works on Render (no Edge middleware needed)
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import path from "path";
@@ -22,6 +23,14 @@ export async function OPTIONS() {
 const rateMap = new Map<string, { count: number; reset: number }>();
 const LIMIT   = 5;
 const WINDOW  = 24 * 60 * 60 * 1000;
+const STARTER_LIMIT = 200;
+
+type Plan = "free" | "starter" | "pro";
+type UsageUpdate = {
+  userId: string;
+  privateMetadata: Record<string, unknown>;
+  fields: Record<string, string | number>;
+};
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -38,6 +47,82 @@ function checkRateLimit(ip: string): boolean {
   if (rec.count >= LIMIT) return false;
   rec.count++;
   return true;
+}
+
+function currentDateKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function currentMonthKey() {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function getPlan(plan: unknown): Plan {
+  return plan === "starter" || plan === "pro" ? plan : "free";
+}
+
+function quotaExceededResponse(message: string) {
+  return NextResponse.json(
+    { error: message, upgrade_url: "/#pricing" },
+    { status: 429, headers: CORS_HEADERS }
+  );
+}
+
+function getUsageCount(value: unknown) {
+  return typeof value === "number" ? value : 0;
+}
+
+async function getUsageUpdate(userId: string): Promise<UsageUpdate | null | NextResponse> {
+  const clerk = await clerkClient();
+  const user = await clerk.users.getUser(userId);
+  const plan = getPlan(user.publicMetadata.plan);
+
+  if (plan === "pro") return null;
+
+  const privateMetadata = user.privateMetadata;
+
+  if (plan === "starter") {
+    const usageMonth = currentMonthKey();
+    const count = privateMetadata.usage_month === usageMonth
+      ? getUsageCount(privateMetadata.usage_count)
+      : 0;
+
+    if (count >= STARTER_LIMIT) {
+      return quotaExceededResponse("Monthly limit reached. Upgrade to Pro for unlimited checks.");
+    }
+
+    return {
+      userId,
+      privateMetadata,
+      fields: { usage_month: usageMonth, usage_count: count + 1 },
+    };
+  }
+
+  const usageDate = currentDateKey();
+  const count = privateMetadata.usage_date === usageDate
+    ? getUsageCount(privateMetadata.usage_count)
+    : 0;
+
+  if (count >= LIMIT) {
+    return quotaExceededResponse("Daily limit reached. Upgrade to Starter for 200 checks/month.");
+  }
+
+  return {
+    userId,
+    privateMetadata,
+    fields: { usage_date: usageDate, usage_count: count + 1 },
+  };
+}
+
+async function incrementUsage(update: UsageUpdate | null) {
+  if (!update) return;
+  const clerk = await clerkClient();
+  await clerk.users.updateUserMetadata(update.userId, {
+    privateMetadata: {
+      ...update.privateMetadata,
+      ...update.fields,
+    },
+  });
 }
 
 // ── Anthropic client ──────────────────────────────────────────────────────
@@ -64,14 +149,6 @@ function extractJson(raw: string): string {
 
 // ── POST handler ──────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { error: "Daily limit reached. Upgrade to Starter for 200 checks/month.", upgrade_url: "/#pricing" },
-      { status: 429, headers: CORS_HEADERS }
-    );
-  }
-
   try {
     const { message, euRecipient, automationTool, outreachType } = await req.json();
 
@@ -80,6 +157,20 @@ export async function POST(req: NextRequest) {
         { error: "Message is required" },
         { status: 400, headers: CORS_HEADERS }
       );
+    }
+
+    const { userId } = await auth();
+    let usageUpdate: UsageUpdate | null = null;
+
+    if (userId) {
+      const update = await getUsageUpdate(userId);
+      if (update instanceof NextResponse) return update;
+      usageUpdate = update;
+    } else {
+      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+      if (!checkRateLimit(ip)) {
+        return quotaExceededResponse("Daily limit reached. Upgrade to Starter for 200 checks/month.");
+      }
     }
 
     const systemPrompt = loadSystemPrompt();
@@ -110,6 +201,8 @@ CONTEXT:
       if (match) result = JSON.parse(match[0]);
       else throw new Error("Could not parse Claude response as JSON");
     }
+
+    await incrementUsage(usageUpdate);
 
     return NextResponse.json(result, { headers: CORS_HEADERS });
 

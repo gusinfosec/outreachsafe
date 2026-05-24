@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 
 type Severity = "high" | "medium" | "low";
 type Risk     = "high" | "medium" | "low" | "clean";
@@ -119,6 +120,7 @@ function Skeleton() {
 }
 
 export default function Home() {
+  const { user } = useUser();
   const [msg,     setMsg]     = useState("");
   const [eu,      setEu]      = useState("unknown");
   const [auto,    setAuto]    = useState("no");
@@ -134,14 +136,14 @@ export default function Home() {
   const words = wc(msg), tooLong = words>300;
 
   useEffect(()=>{
-    if(!loading){setLIdx(0);return;}
+    if(!loading) return;
     const id=setInterval(()=>setLIdx(i=>(i+1)%LOADING_MSGS.length),2600);
     return ()=>clearInterval(id);
   },[loading]);
 
   const handleCheck = useCallback(async()=>{
     if(!msg.trim()){setErr("Please paste a message to analyze.");return;}
-    setLoading(true);setErr("");setResult(null);
+    setLoading(true);setErr("");setResult(null);setLIdx(0);
     try{
       const res=await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg,euRecipient:eu,automationTool:auto,outreachType:type})});
       const data=await res.json();
@@ -212,6 +214,26 @@ export default function Home() {
             <a href="#pricing" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Pricing</a>
             <Link href="/support" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Support</Link>
             <Link href="/privacy" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">Privacy</Link>
+            
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-[13px] font-semibold text-white bg-[#7C3AED] hover:bg-[#6D28D9] px-4 py-1.5 rounded-lg transition-colors">
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <div className="flex items-center gap-3">
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                  user?.publicMetadata?.plan === "pro" ? "border-blue-500/30 text-blue-400 bg-blue-500/10" :
+                  user?.publicMetadata?.plan === "starter" ? "border-[#7C3AED]/30 text-[#A78BFA] bg-[#7C3AED]/10" :
+                  "border-slate-500/30 text-slate-400 bg-slate-500/10"
+                }`}>
+                  {((user?.publicMetadata?.plan as string) || "FREE").toUpperCase()}
+                </span>
+                <UserButton />
+              </div>
+            </SignedIn>
           </div>
         </div>
       </nav>

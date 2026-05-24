@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — OutreachSafe",
@@ -23,7 +24,19 @@ export default function PrivacyPage() {
             />
             <span className="text-[16px] font-extrabold text-white tracking-tight">Outreach<span className="text-[#7C3AED]">Safe</span></span>
           </Link>
-          <Link href="/" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">← Back to app</Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-[13px] font-medium text-slate-500 hover:text-white transition-colors">← Back to app</Link>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-[12px] font-semibold text-white bg-[#7C3AED] hover:bg-[#6D28D9] px-3 py-1 rounded-lg transition-colors">
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
         </div>
       </nav>
 

@@ -1,6 +1,7 @@
 // app/app/api/checkout/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
 
   // ── Step 7: Create checkout session ─────────────────────────────────────
   try {
+    const { userId } = await auth();
     const origin = appURL.replace(/\/$/, ""); // remove trailing slash
 
     console.log("[Checkout] Creating session with:");
@@ -92,6 +94,8 @@ export async function POST(req: NextRequest) {
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${origin}/#pricing`,
       allow_promotion_codes: true,
+      metadata: { price_id: priceId },
+      ...(userId ? { client_reference_id: userId } : {}),
     });
 
     console.log("[Checkout] Session created:", session.id);
