@@ -4,8 +4,8 @@ import Stripe from "stripe";
 
 export const runtime = "nodejs";
 
-const FALLBACK_STARTER_PRICE_ID = "price_1TXWvuFnIuEgeFxO6nVnXJoB";
-const FALLBACK_PRO_PRICE_ID = "price_1TXWuPFnIuEgeFxOesJVBAgJ";
+const FALLBACK_STARTER_PRICE_ID = "price_1TapQlFnIuEgeFxOgYoO3xR9";
+const FALLBACK_PRO_PRICE_ID = "price_1TapT6FnIuEgeFxOz09fiHdi";
 
 type Plan = "free" | "starter" | "pro";
 
