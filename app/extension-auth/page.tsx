@@ -10,12 +10,18 @@ export default function ExtensionAuth() {
     (async () => {
       try {
         const token = await getToken();
-        const EXTENSION_ID = process.env.NEXT_PUBLIC_EXTENSION_ID;
-        if (token && EXTENSION_ID && (window as any).chrome?.runtime) {
-          (window as any).chrome.runtime.sendMessage(
-            EXTENSION_ID,
-            { type: "AUTH_TOKEN", token }
-          );
+        const EXTENSION_IDS = [
+          process.env.NEXT_PUBLIC_EXTENSION_ID,
+          process.env.NEXT_PUBLIC_EXTENSION_DEV_ID,
+        ].filter(Boolean);
+        if (token && (window as any).chrome?.runtime) {
+          for (const id of EXTENSION_IDS) {
+            try {
+              (window as any).chrome.runtime.sendMessage(
+                id, { type: "AUTH_TOKEN", token }
+              );
+            } catch (_) {}
+          }
         }
       } catch (e) {
         console.error("Extension auth error:", e);
