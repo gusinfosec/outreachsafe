@@ -8,8 +8,8 @@ const EXTENSION_ID = process.env.NEXT_PUBLIC_EXTENSION_ID;
 type Status = "idle" | "sending" | "success" | "no_extension" | "error";
 
 export default function ExtensionAuthPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const { getToken } = useAuth();
+  const { isLoaded, user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
   const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
