@@ -48,7 +48,7 @@ export default function ExtensionAuth() {
         fontWeight:"700",marginBottom:"8px"}}>
         OutreachSafe
       </div>
-      <SignIn />
+      <SignIn forceRedirectUrl="/extension-auth" />
     </div>
   );
 }
