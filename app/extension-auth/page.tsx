@@ -68,7 +68,7 @@ export default function ExtensionAuthPage() {
           </div>
           <p className="text-sm text-slate-400">Sign in to connect your account to the Chrome extension.</p>
         </div>
-        <SignIn redirectUrl="/extension-auth" />
+        <SignIn forceRedirectUrl="/extension-auth" />
       </div>
     );
   }
