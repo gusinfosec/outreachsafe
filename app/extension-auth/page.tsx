@@ -1,51 +1,80 @@
 "use client";
 import { SignIn, useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-type Status = "connecting" | "connected" | "failed";
+console.log("[OutreachSafe] extension-auth module loaded");
+
+type Status = "idle" | "connecting" | "connected" | "failed";
 
 const DELAY = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 async function trySendMessage(id: string, token: string): Promise<boolean> {
   return new Promise(resolve => {
+    console.log("[OutreachSafe] trySendMessage → ID:", id);
+    console.log("[OutreachSafe] chrome.runtime present:", !!(window as any).chrome?.runtime);
     try {
       (window as any).chrome.runtime.sendMessage(
         id,
         { type: "AUTH_TOKEN", token },
-        () => {
-          const err = (window as any).chrome.runtime.lastError;
-          resolve(!err);
+        (response: unknown) => {
+          const err = (window as any).chrome?.runtime?.lastError;
+          if (err) {
+            console.error("[OutreachSafe] sendMessage error for", id, ":", err.message);
+            resolve(false);
+          } else {
+            console.log("[OutreachSafe] sendMessage success for", id, "response:", response);
+            resolve(true);
+          }
         }
       );
-    } catch {
+    } catch (e) {
+      console.error("[OutreachSafe] sendMessage threw for", id, ":", e);
       resolve(false);
     }
   });
 }
 
-export default function ExtensionAuth() {
+function ExtensionAuthInner() {
   const { isSignedIn, getToken } = useAuth();
-  const [status, setStatus] = useState<Status>("connecting");
+  const searchParams = useSearchParams();
+  const connected = searchParams.get("connected") === "true";
+  const [status, setStatus] = useState<Status>("idle");
+
+  console.log("[OutreachSafe] render — isSignedIn:", isSignedIn, "connected param:", connected, "status:", status);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    console.log("[OutreachSafe] useEffect fired — isSignedIn:", isSignedIn, "connected:", connected);
+
+    if (!isSignedIn || !connected) {
+      console.log("[OutreachSafe] useEffect: skipping — not signed in or no ?connected param");
+      return;
+    }
 
     (async () => {
       setStatus("connecting");
+      console.log("[OutreachSafe] starting token send flow");
 
-      // Wait for page to stabilise before attempting sendMessage
       await DELAY(500);
 
       let token: string | null = null;
       try {
         token = await getToken();
+        console.log("[OutreachSafe] getToken result:", token ? "got token" : "null");
       } catch (e) {
-        console.error("Extension auth: getToken failed", e);
+        console.error("[OutreachSafe] getToken threw:", e);
         setStatus("failed");
         return;
       }
 
-      if (!token || !(window as any).chrome?.runtime) {
+      if (!token) {
+        console.error("[OutreachSafe] token is null after getToken");
+        setStatus("failed");
+        return;
+      }
+
+      if (!(window as any).chrome?.runtime) {
+        console.error("[OutreachSafe] window.chrome.runtime not available");
         setStatus("failed");
         return;
       }
@@ -54,36 +83,48 @@ export default function ExtensionAuth() {
         process.env.NEXT_PUBLIC_EXTENSION_ID,
         process.env.NEXT_PUBLIC_EXTENSION_DEV_ID,
       ].filter(Boolean) as string[];
+      console.log("[OutreachSafe] IDs to try:", EXTENSION_IDS);
 
-      const MAX_ATTEMPTS = 3;
       let succeeded = false;
-
-      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        console.log("[OutreachSafe] attempt", attempt, "of 3");
         for (const id of EXTENSION_IDS) {
           const ok = await trySendMessage(id, token);
           if (ok) { succeeded = true; break; }
         }
         if (succeeded) break;
-        if (attempt < MAX_ATTEMPTS) await DELAY(1000);
+        if (attempt < 3) {
+          console.log("[OutreachSafe] retrying in 1s…");
+          await DELAY(1000);
+        }
       }
 
+      console.log("[OutreachSafe] final result:", succeeded ? "succeeded" : "failed");
       setStatus(succeeded ? "connected" : "failed");
     })();
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn, connected, getToken]);
 
+  // Always show debug state panel when signed in
   if (isSignedIn) {
     return (
-      <div style={{display:"flex",alignItems:"center",
-        justifyContent:"center",minHeight:"100vh",
-        background:"#0a0d1a",color:"#fff",
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",
+        minHeight:"100vh",background:"#0a0d1a",color:"#fff",
         fontFamily:"sans-serif",flexDirection:"column",gap:"12px"}}>
 
-        {status === "connecting" && (
+        {/* Debug state banner */}
+        <div style={{position:"fixed",top:0,left:0,right:0,background:"#1a1a2e",
+          padding:"8px 16px",fontSize:"11px",color:"#888",fontFamily:"monospace"}}>
+          isSignedIn: {String(isSignedIn)} · connected param: {String(connected)} · status: {status}
+        </div>
+
+        {(status === "idle" || status === "connecting") && (
           <>
             <div style={{width:"32px",height:"32px",border:"3px solid #333",
               borderTop:"3px solid #7c3aed",borderRadius:"50%",
               animation:"spin 0.8s linear infinite"}} />
-            <div style={{fontSize:"16px",fontWeight:"600"}}>Connecting…</div>
+            <div style={{fontSize:"16px",fontWeight:"600"}}>
+              {status === "idle" ? "Waiting…" : "Connecting…"}
+            </div>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </>
         )}
@@ -91,9 +132,7 @@ export default function ExtensionAuth() {
         {status === "connected" && (
           <>
             <div style={{fontSize:"32px"}}>✓</div>
-            <div style={{fontSize:"18px",fontWeight:"700"}}>
-              Connected to OutreachSafe
-            </div>
+            <div style={{fontSize:"18px",fontWeight:"700"}}>Connected to OutreachSafe</div>
             <div style={{color:"#888",fontSize:"14px"}}>
               You can close this tab and return to the extension.
             </div>
@@ -103,11 +142,9 @@ export default function ExtensionAuth() {
         {status === "failed" && (
           <>
             <div style={{fontSize:"32px"}}>⚠</div>
-            <div style={{fontSize:"18px",fontWeight:"700",color:"#f87171"}}>
-              Connection failed
-            </div>
+            <div style={{fontSize:"18px",fontWeight:"700",color:"#f87171"}}>Connection failed</div>
             <div style={{color:"#888",fontSize:"14px",textAlign:"center",maxWidth:"280px"}}>
-              Please close this tab and try signing in from the extension again.
+              Check the browser console for details. Close this tab and try again.
             </div>
           </>
         )}
@@ -116,14 +153,20 @@ export default function ExtensionAuth() {
   }
 
   return (
-    <div style={{display:"flex",alignItems:"center",
-      justifyContent:"center",minHeight:"100vh",
-      background:"#0a0d1a",flexDirection:"column",gap:"16px"}}>
-      <div style={{color:"#fff",fontSize:"18px",
-        fontWeight:"700",marginBottom:"8px"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",
+      minHeight:"100vh",background:"#0a0d1a",flexDirection:"column",gap:"16px"}}>
+      <div style={{color:"#fff",fontSize:"18px",fontWeight:"700",marginBottom:"8px"}}>
         OutreachSafe
       </div>
-      <SignIn forceRedirectUrl="/extension-auth" />
+      <SignIn forceRedirectUrl="/extension-auth?connected=true" />
     </div>
+  );
+}
+
+export default function ExtensionAuth() {
+  return (
+    <Suspense>
+      <ExtensionAuthInner />
+    </Suspense>
   );
 }
