@@ -1,7 +1,6 @@
 "use client";
 import { SignIn, useAuth } from "@clerk/nextjs";
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 console.log("[OutreachSafe] extension-auth module loaded");
 
@@ -35,21 +34,15 @@ async function trySendMessage(id: string, token: string): Promise<boolean> {
   });
 }
 
-function ExtensionAuthInner() {
+export default function ExtensionAuth() {
   const { isSignedIn, getToken } = useAuth();
-  const searchParams = useSearchParams();
-  const connected = searchParams.get("connected") === "true";
   const [status, setStatus] = useState<Status>("idle");
 
-  console.log("[OutreachSafe] render — isSignedIn:", isSignedIn, "connected param:", connected, "status:", status);
+  console.log("[OutreachSafe] render — isSignedIn:", isSignedIn, "status:", status);
 
   useEffect(() => {
-    console.log("[OutreachSafe] useEffect fired — isSignedIn:", isSignedIn, "connected:", connected);
-
-    if (!isSignedIn || !connected) {
-      console.log("[OutreachSafe] useEffect: skipping — not signed in or no ?connected param");
-      return;
-    }
+    console.log("[OutreachSafe] useEffect fired — isSignedIn:", isSignedIn);
+    if (!isSignedIn) return;
 
     (async () => {
       setStatus("connecting");
@@ -102,19 +95,17 @@ function ExtensionAuthInner() {
       console.log("[OutreachSafe] final result:", succeeded ? "succeeded" : "failed");
       setStatus(succeeded ? "connected" : "failed");
     })();
-  }, [isSignedIn, connected, getToken]);
+  }, [isSignedIn, getToken]);
 
-  // Always show debug state panel when signed in
   if (isSignedIn) {
     return (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",
         minHeight:"100vh",background:"#0a0d1a",color:"#fff",
         fontFamily:"sans-serif",flexDirection:"column",gap:"12px"}}>
 
-        {/* Debug state banner */}
         <div style={{position:"fixed",top:0,left:0,right:0,background:"#1a1a2e",
           padding:"8px 16px",fontSize:"11px",color:"#888",fontFamily:"monospace"}}>
-          isSignedIn: {String(isSignedIn)} · connected param: {String(connected)} · status: {status}
+          isSignedIn: {String(isSignedIn)} · status: {status}
         </div>
 
         {(status === "idle" || status === "connecting") && (
@@ -158,15 +149,7 @@ function ExtensionAuthInner() {
       <div style={{color:"#fff",fontSize:"18px",fontWeight:"700",marginBottom:"8px"}}>
         OutreachSafe
       </div>
-      <SignIn forceRedirectUrl="/extension-auth?connected=true" />
+      <SignIn forceRedirectUrl="/extension-auth" />
     </div>
-  );
-}
-
-export default function ExtensionAuth() {
-  return (
-    <Suspense>
-      <ExtensionAuthInner />
-    </Suspense>
   );
 }
