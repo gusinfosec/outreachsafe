@@ -74,7 +74,6 @@ export default function ExtensionAuth() {
 
       const EXTENSION_IDS = [
         process.env.NEXT_PUBLIC_EXTENSION_ID,
-        process.env.NEXT_PUBLIC_EXTENSION_DEV_ID,
       ].filter(Boolean) as string[];
       console.log("[OutreachSafe] IDs to try:", EXTENSION_IDS);
 
