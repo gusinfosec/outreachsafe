@@ -140,11 +140,12 @@ export default function Home() {
     return ()=>clearInterval(id);
   },[loading]);
 
-  const handleCheck = useCallback(async()=>{
-    if(!msg.trim()){setErr("Please paste a message to analyze.");return;}
+  const handleCheck = useCallback(async(msgOverride?: string)=>{
+    const text=(msgOverride!==undefined?msgOverride:msg).trim();
+    if(!text){setErr("Please paste a message to analyze.");return;}
     setLoading(true);setErr("");setResult(null);setLIdx(0);
     try{
-      const res=await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg,euRecipient:eu,automationTool:auto,outreachType:type})});
+      const res=await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text,euRecipient:eu,automationTool:auto,outreachType:type})});
       const data=await res.json();
       if(data.error){setErr(data.error);return;}
       setResult(data);
@@ -188,6 +189,13 @@ export default function Home() {
     const h=(e:KeyboardEvent)=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"&&msg.trim()&&!loading)handleCheck();};
     window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);
   },[handleCheck,msg,loading]);
+
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    const urlMsg=params.get("message");
+    if(urlMsg){setMsg(urlMsg);handleCheck(urlMsg);}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   const risk=result?RISK[result.overall_risk]:null;
   const score=result?calcScore(result.violations):null;
