@@ -278,7 +278,7 @@ export default function Home() {
             </div>
 
             <button
-              onClick={handleCheck}
+              onClick={() => handleCheck()}
               disabled={loading||!msg.trim()}
               className="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] text-white font-bold text-[15px] shadow-[0_8px_24px_rgba(124,58,237,0.3)] hover:shadow-[0_12px_32px_rgba(124,58,237,0.4)] hover:-translate-y-px active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
             >
