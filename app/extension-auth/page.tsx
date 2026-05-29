@@ -2,97 +2,34 @@
 import { SignIn, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
-console.log("[OutreachSafe] extension-auth module loaded");
-
 type Status = "idle" | "connecting" | "connected" | "failed";
-
-const DELAY = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-async function trySendMessage(id: string, token: string): Promise<boolean> {
-  return new Promise(resolve => {
-    console.log("[OutreachSafe] trySendMessage → ID:", id);
-    console.log("[OutreachSafe] chrome.runtime present:", !!(window as any).chrome?.runtime);
-    try {
-      (window as any).chrome.runtime.sendMessage(
-        id,
-        { type: "AUTH_TOKEN", token },
-        (response: unknown) => {
-          const err = (window as any).chrome?.runtime?.lastError;
-          if (err) {
-            console.error("[OutreachSafe] sendMessage error for", id, ":", err.message);
-            resolve(false);
-          } else {
-            console.log("[OutreachSafe] sendMessage success for", id, "response:", response);
-            resolve(true);
-          }
-        }
-      );
-    } catch (e) {
-      console.error("[OutreachSafe] sendMessage threw for", id, ":", e);
-      resolve(false);
-    }
-  });
-}
 
 export default function ExtensionAuth() {
   const { isSignedIn, getToken } = useAuth();
   const [status, setStatus] = useState<Status>("idle");
 
-  console.log("[OutreachSafe] render — isSignedIn:", isSignedIn, "status:", status);
-
   useEffect(() => {
-    console.log("[OutreachSafe] useEffect fired — isSignedIn:", isSignedIn);
     if (!isSignedIn) return;
 
     (async () => {
       setStatus("connecting");
-      console.log("[OutreachSafe] starting token send flow");
-
-      await DELAY(500);
 
       let token: string | null = null;
       try {
         token = await getToken();
-        console.log("[OutreachSafe] getToken result:", token ? "got token" : "null");
-      } catch (e) {
-        console.error("[OutreachSafe] getToken threw:", e);
+      } catch {
         setStatus("failed");
         return;
       }
 
       if (!token) {
-        console.error("[OutreachSafe] token is null after getToken");
         setStatus("failed");
         return;
       }
 
-      if (!(window as any).chrome?.runtime) {
-        console.error("[OutreachSafe] window.chrome.runtime not available");
-        setStatus("failed");
-        return;
-      }
-
-      const EXTENSION_IDS = [
-        process.env.NEXT_PUBLIC_EXTENSION_ID,
-      ].filter(Boolean) as string[];
-      console.log("[OutreachSafe] IDs to try:", EXTENSION_IDS);
-
-      let succeeded = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        console.log("[OutreachSafe] attempt", attempt, "of 3");
-        for (const id of EXTENSION_IDS) {
-          const ok = await trySendMessage(id, token);
-          if (ok) { succeeded = true; break; }
-        }
-        if (succeeded) break;
-        if (attempt < 3) {
-          console.log("[OutreachSafe] retrying in 1s…");
-          await DELAY(1000);
-        }
-      }
-
-      console.log("[OutreachSafe] final result:", succeeded ? "succeeded" : "failed");
-      setStatus(succeeded ? "connected" : "failed");
+      // SameSite=None;Secure required so the chrome-extension fetch can send this cookie
+      document.cookie = `os_ext_token=${token}; domain=outreachsafe.com; path=/; max-age=300; SameSite=None; Secure`;
+      setStatus("connected");
     })();
   }, [isSignedIn, getToken]);
 
@@ -101,11 +38,6 @@ export default function ExtensionAuth() {
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",
         minHeight:"100vh",background:"#0a0d1a",color:"#fff",
         fontFamily:"sans-serif",flexDirection:"column",gap:"12px"}}>
-
-        <div style={{position:"fixed",top:0,left:0,right:0,background:"#1a1a2e",
-          padding:"8px 16px",fontSize:"11px",color:"#888",fontFamily:"monospace"}}>
-          isSignedIn: {String(isSignedIn)} · status: {status}
-        </div>
 
         {(status === "idle" || status === "connecting") && (
           <>
