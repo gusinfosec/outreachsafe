@@ -54,10 +54,9 @@ const LOADING_MSGS = [
   "Generating safer recommendations…",
 ];
 
-// ── Stripe price IDs (public — safe to hardcode) ──────────────────────────────
 const PRICES = {
-  starter: "price_1TapQlFnIuEgeFxOgYoO3xR9",
-  pro:     "price_1TapT6FnIuEgeFxOz09fiHdi",
+  starter: "price_1TXWvuFnIuEgeFxO6nVnXJoB",
+  pro:     "price_1TXWuPFnIuEgeFxOesJVBAgJ",
 };
 
 function wc(t: string) { return t.split(/\s+/).filter(Boolean).length; }
